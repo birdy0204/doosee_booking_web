@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Doosee Design System - Orange Theme for Beauty Industry */
+
+@layer base {
+  :root {
+    --background: 30 50% 98%;
+    --foreground: 20 14% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 20%;
+
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 30% 96%;
+    --secondary-foreground: 20 14% 20%;
+
+    --muted: 30 20% 94%;
+    --muted-foreground: 20 10% 45%;
+
+    --accent: 24 90% 95%;
+    --accent-foreground: 24 95% 40%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 20% 90%;
+    --input: 30 20% 90%;
+    --ring: 24 95% 53%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 30% 97%;
+    --sidebar-foreground: 20 14% 20%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 30% 94%;
+    --sidebar-accent-foreground: 20 14% 20%;
+    --sidebar-border: 30 20% 90%;
+    --sidebar-ring: 24 95% 53%;
+  }
+
+  .dark {
+    --background: 20 14% 10%;
+    --foreground: 30 20% 95%;
+
+    --card: 20 14% 14%;
+    --card-foreground: 30 20% 95%;
+
+    --popover: 20 14% 14%;
+    --popover-foreground: 30 20% 95%;
+
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 20 14% 18%;
+    --secondary-foreground: 30 20% 95%;
+
+    --muted: 20 14% 18%;
+    --muted-foreground: 30 15% 60%;
+
+    --accent: 24 50% 20%;
+    --accent-foreground: 24 95% 70%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 30 20% 95%;
+
+    --border: 20 14% 20%;
+    --input: 20 14% 20%;
+    --ring: 24 95% 53%;
+
+    --sidebar-background: 20 14% 10%;
+    --sidebar-foreground: 30 20% 95%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 20 14% 18%;
+    --sidebar-accent-foreground: 30 20% 95%;
+    --sidebar-border: 20 14% 20%;
+    --sidebar-ring: 24 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Scroll Animation Classes */
+@layer utilities {
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .animate-delay-100 {
+    transition-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    transition-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    transition-delay: 300ms;
+  }
+
+  .animate-delay-400 {
+    transition-delay: 400ms;
+  }
+
+  .animate-delay-500 {
+    transition-delay: 500ms;
+  }
+}

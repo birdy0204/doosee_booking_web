@@ -1,0 +1,60 @@
+import { Globe, Target, Eye, Heart, Star } from 'lucide-react';
+
+const values = [
+  { icon: Globe, title: '品牌國際化' },
+  { icon: Target, title: '經營精確化' },
+  { icon: Eye, title: '專業被看見' },
+  { icon: Heart, title: '顧客更貼近' },
+  { icon: Star, title: '夢想成現實' },
+];
+
+const MissionSection = () => {
+  return (
+    <section id="mission" className="py-20 lg:py-28 bg-secondary">
+      <div className="container mx-auto px-4">
+        <div
+          data-aos="fade-up"
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            我們的使命，是陪伴美業人完成夢想
+          </h2>
+        </div>
+
+        <div
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 lg:gap-8 mb-16"
+        >
+          {values.map((value, index) => {
+            const Icon = value.icon;
+            return (
+              <div
+                key={value.title}
+                data-aos="fade-up"
+                data-aos-delay={(index + 1) * 100}
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-card hover:shadow-lg transition-all duration-300"
+              >
+                <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
+                  <Icon className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">{value.title}</h3>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          data-aos="fade-up"
+          className="text-center"
+        >
+          <div className="inline-block bg-primary rounded-2xl px-8 py-6 lg:px-12 lg:py-8">
+            <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-primary-foreground">
+              不只是平台，而是你的數位夥伴。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default MissionSection;
