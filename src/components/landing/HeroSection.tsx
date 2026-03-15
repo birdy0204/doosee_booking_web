@@ -1,6 +1,4 @@
 import { Button } from '@/components/ui/button';
-import heroImage from '@/assets/hero-stylist.jpg';
-import heroLogo from '@/assets/hero-logo.png';
 
 const HeroSection = () => {
   return (
@@ -10,7 +8,7 @@ const HeroSection = () => {
           {/* Left Content */}
           <div className="text-center lg:text-left order-2 lg:order-1" data-aos="fade-up">
             <img
-              src={heroLogo}
+              src="/hero-logo.png"
               alt="Doosee Logo"
               className="h-20 md:h-24 lg:h-32 w-auto mb-8 mx-auto lg:mx-0"
             />
@@ -35,7 +33,7 @@ const HeroSection = () => {
             <div className="relative w-full max-w-md lg:max-w-lg">
               <div className="absolute inset-0 bg-primary-foreground/10 rounded-3xl transform rotate-3"></div>
               <img
-                src={heroImage}
+                src="/hero-stylist.jpg"
                 alt="專業美髮師為顧客服務"
                 className="relative rounded-3xl shadow-2xl w-full h-auto object-cover"
               />

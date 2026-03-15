@@ -1,1 +1,34 @@
+# Dependencies
 node_modules
+bun.lockb
+
+# Build output
+.next
+out
+dist
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor / IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Next.js
+next-env.d.ts

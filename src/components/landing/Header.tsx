@@ -1,7 +1,8 @@
+"use client";
+
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import logo from '@/assets/doosee-logo.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,7 +12,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img
-            src={logo}
+            src="/doosee-logo.png"
             alt="Doosee Logo"
             className="h-9 md:h-11 w-auto scale-150 origin-left"
           />
