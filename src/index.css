@@ -1,3 +1,5 @@
+@import "lenis/dist/lenis.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,6 +91,16 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html,
+  body {
+    scrollbar-width: none; /* Firefox */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Chrome / Safari / Edge */
   }
 
   body {

@@ -1,4 +1,5 @@
 import { Globe, Target, Eye, Heart, Star } from 'lucide-react';
+import { fontSize, textColor } from '@/constants/landing-styles';
 
 const values = [
   { icon: Globe, title: '品牌國際化' },
@@ -10,13 +11,13 @@ const values = [
 
 const MissionSection = () => {
   return (
-    <section id="mission" className="py-20 lg:py-28 bg-secondary">
+    <section id="mission" data-section-label="我們的使命" className="py-20 lg:py-28 bg-secondary">
       <div className="container mx-auto px-4">
         <div
           data-aos="fade-up"
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          <h2 className={`${fontSize.sectionTitle} font-bold ${textColor.onLight} mb-4`}>
             我們的使命，是陪伴美業人完成夢想
           </h2>
         </div>
@@ -36,7 +37,7 @@ const MissionSection = () => {
                 <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
                   <Icon className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground">{value.title}</h3>
+                <h3 className={`${fontSize.body} font-semibold ${textColor.onLight}`}>{value.title}</h3>
               </div>
             );
           })}
@@ -47,7 +48,7 @@ const MissionSection = () => {
           className="text-center"
         >
           <div className="inline-block bg-primary rounded-2xl px-8 py-6 lg:px-12 lg:py-8">
-            <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-primary-foreground">
+            <p className={`${fontSize.bodyLg} font-semibold text-primary-foreground`}>
               不只是平台，而是你的數位夥伴。
             </p>
           </div>

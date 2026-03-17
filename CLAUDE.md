@@ -16,6 +16,8 @@ Doosee 美容業軟體產品介紹網站，包含：
 - **樣式**：Tailwind CSS + shadcn/ui（Radix UI 為底層）
 - **狀態管理 / 資料請求**：TanStack React Query
 - **表單**：React Hook Form + Zod 驗證
+- **動畫**：GSAP + @gsap/react（使用 `useGSAP` hook，需搭配 `"use client"`）
+- **平滑滾動**：Lenis（https://github.com/darkroomengineering/lenis）
 - **路由**：Next.js App Router（Route Group 分離前後台）
 
 ### 渲染策略

@@ -1,4 +1,5 @@
 import { Calendar, Users, BarChart3, CreditCard, Sparkles } from 'lucide-react';
+import { fontSize, textColor } from '@/constants/landing-styles';
 
 const features = [
   {
@@ -30,16 +31,16 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-20 lg:py-28 bg-background">
+    <section id="features" data-section-label="功能介紹" className="py-20 lg:py-28 bg-background">
       <div className="container mx-auto px-4">
         <div
           data-aos="fade-up"
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          <h2 className={`${fontSize.sectionTitle} font-bold ${textColor.onLight} mb-4`}>
             從日常管理，到夢想實現
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className={`${fontSize.bodyLg} ${textColor.onLightMuted} max-w-2xl mx-auto`}>
             我們提供完整的數位化解決方案，讓您專注於創造美好
           </p>
         </div>
@@ -71,10 +72,10 @@ const FeatureCard = ({ feature, index }: FeatureCardProps) => {
       <div className="w-14 h-14 rounded-xl bg-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
         <Icon className="w-7 h-7 text-primary" />
       </div>
-      <h3 className="text-xl font-semibold text-foreground mb-3">
+      <h3 className={`${fontSize.subtitle} font-semibold ${textColor.onLight} mb-3`}>
         {feature.title}
       </h3>
-      <p className="text-muted-foreground leading-relaxed">
+      <p className={`${fontSize.body} ${textColor.onLightMuted} leading-relaxed`}>
         {feature.description}
       </p>
     </div>
