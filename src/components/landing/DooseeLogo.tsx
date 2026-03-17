@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { LOGO_SCROLL_END } from "@/constants/landing-styles";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,15 +14,20 @@ const CLIP_RECT = "M 0,595.276 H 841.89 V 0 H 0 Z";
 interface DooseeLogoProps {
   className?: string;
   textColor?: string;
+  /** 是否啟用滾動掉落動畫，預設 true */
+  animate?: boolean;
 }
 
 const DooseeLogo = ({
   className = "h-[35px] w-auto scale-[4.5] origin-left",
   textColor = "#ffffff",
+  animate = true,
 }: DooseeLogoProps) => {
   const letterRefs = useRef<(SVGGElement | null)[]>([]);
 
   useGSAP(() => {
+    if (!animate) return;
+
     const letters = letterRefs.current.filter(Boolean) as SVGGElement[];
     if (letters.length === 0) return;
 
@@ -33,7 +39,7 @@ const DooseeLogo = ({
     const tl = gsap.timeline({
       scrollTrigger: {
         start: "top top",
-        end: "150 top",
+        end: LOGO_SCROLL_END,
         scrub: 0.3,
       },
     });

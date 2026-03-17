@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import MenuOverlay from "./MenuOverlay";
 import DooseeLogo from "./DooseeLogo";
-import { textColor } from "@/constants/landing-styles";
+import { textColor, LOGO_SCROLL_END } from "@/constants/landing-styles";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,7 +18,7 @@ const Header = () => {
   const [isDarkSection, setIsDarkSection] = useState(true);
   const menuTextRef = useRef<HTMLSpanElement>(null);
 
-  // Menu 文字隨滾動淡出（與 DooseeLogo 同步）
+  // Menu 文字隨滾動淡出（與 DooseeLogo 同步，共用 LOGO_SCROLL_END）
   useGSAP(() => {
     if (!menuTextRef.current) return;
     gsap.to(menuTextRef.current, {
@@ -26,7 +26,7 @@ const Header = () => {
       y: -20,
       scrollTrigger: {
         start: "top top",
-        end: "150 top",
+        end: LOGO_SCROLL_END,
         scrub: 0.3,
       },
     });
@@ -34,25 +34,23 @@ const Header = () => {
 
   useEffect(() => {
     setMounted(true);
-
-    // 偵測是否在深色背景的 section
-    const darkSections = document.querySelectorAll('[data-section-theme="dark"]');
-    if (darkSections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // 任一 dark section 可見且佔比 > 50% 就切換
-        const isAnyDarkVisible = entries.some(
-          (entry) => entry.isIntersecting && entry.intersectionRatio > 0.3
-        );
-        setIsDarkSection(isAnyDarkVisible);
-      },
-      { threshold: [0, 0.3, 0.5, 1] }
-    );
-
-    darkSections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
   }, []);
+
+  // 偵測是否在深色背景的 section（與 SectionIndicator 統一使用 ScrollTrigger）
+  useGSAP(() => {
+    const darkSections = gsap.utils.toArray<HTMLElement>(
+      '[data-section-theme="dark"]'
+    );
+    darkSections.forEach((section) => {
+      ScrollTrigger.create({
+        trigger: section,
+        // top-=1：給 1px 緩衝，避免 scroll=0 時恰好在邊界導致 trigger 判定為未啟動
+        start: "top-=1 top",
+        end: "bottom top",
+        onToggle: ({ isActive }) => setIsDarkSection(isActive),
+      });
+    });
+  }, { dependencies: [mounted] });
 
   // 首頁（深色背景）：白底黑 icon；其他頁面（淺色背景）：黑底白 icon
   const btnBg = isDarkSection ? "bg-white" : "bg-black";
@@ -62,7 +60,7 @@ const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="w-full px-9 py-9 flex items-center justify-between">
+        <div className="w-full pr-9 py-9 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             <DooseeLogo />
           </Link>

@@ -24,7 +24,8 @@ const PageReveal = () => {
     const numberEl = numberRef.current;
     if (!container || !bar || !numberEl) return;
 
-    // 鎖定滾動
+    // 鎖定滾動（注意：MenuOverlay 也會操控 body.overflow，
+    // 但 PageReveal 僅在初始載入時執行，完成後即釋放，不會與 MenuOverlay 衝突）
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
@@ -94,6 +95,7 @@ const PageReveal = () => {
         <DooseeLogo
           className="h-32 md:h-48 w-auto"
           textColor="#1a1a1a"
+          animate={false}
         />
       </div>
 

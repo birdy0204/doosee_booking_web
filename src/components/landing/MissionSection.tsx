@@ -13,10 +13,7 @@ const MissionSection = () => {
   return (
     <section id="mission" data-section-label="我們的使命" className="py-20 lg:py-28 bg-secondary">
       <div className="container mx-auto px-4">
-        <div
-          data-aos="fade-up"
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <h2 className={`${fontSize.sectionTitle} font-bold ${textColor.onLight} mb-4`}>
             我們的使命，是陪伴美業人完成夢想
           </h2>
@@ -30,8 +27,6 @@ const MissionSection = () => {
             return (
               <div
                 key={value.title}
-                data-aos="fade-up"
-                data-aos-delay={(index + 1) * 100}
                 className="flex flex-col items-center text-center p-6 rounded-2xl bg-card hover:shadow-lg transition-all duration-300"
               >
                 <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
@@ -43,10 +38,7 @@ const MissionSection = () => {
           })}
         </div>
 
-        <div
-          data-aos="fade-up"
-          className="text-center"
-        >
+        <div className="text-center">
           <div className="inline-block bg-primary rounded-2xl px-8 py-6 lg:px-12 lg:py-8">
             <p className={`${fontSize.bodyLg} font-semibold text-primary-foreground`}>
               不只是平台，而是你的數位夥伴。

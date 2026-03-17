@@ -12,7 +12,6 @@ const SectionIndicator = () => {
   const labelRef = useRef<HTMLSpanElement>(null);
   const numberRef = useRef<HTMLSpanElement>(null);
   const currentLabelRef = useRef<string>("");
-  const isAnimatingRef = useRef(false);
   const [isDark, setIsDark] = useState(false);
 
   useGSAP(() => {
@@ -49,20 +48,17 @@ const SectionIndicator = () => {
     });
 
     function switchLabel(newLabel: string, activeIndex: number, theme: string | null) {
-      if (currentLabelRef.current === newLabel || isAnimatingRef.current)
-        return;
+      if (currentLabelRef.current === newLabel) return;
+
+      // 中斷進行中的動畫，避免快速滾動時被跳過
+      gsap.killTweensOf([labelRef.current, numberRef.current]);
 
       currentLabelRef.current = newLabel;
-      isAnimatingRef.current = true;
       setIsDark(theme === "dark");
 
       const newNumber = String(activeIndex + 1).padStart(2, "0");
 
-      const tl = gsap.timeline({
-        onComplete: () => {
-          isAnimatingRef.current = false;
-        },
-      });
+      const tl = gsap.timeline();
 
       // 舊文字與編號向上滑出 + 淡出
       tl.to([labelRef.current, numberRef.current], {

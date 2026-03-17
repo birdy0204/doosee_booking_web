@@ -7,21 +7,25 @@ const HeroSection = () => {
       {/* 底部漸層遮罩，讓下方文字更清晰 */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-      <div className="relative z-10 container mx-auto px-8 lg:px-16 flex items-end min-h-screen pb-24 lg:pb-32">
-        <div className="text-left max-w-3xl" data-aos="fade-up">
+      <div className="relative z-10 container mx-auto px-8 lg:px-16 flex items-center min-h-screen">
+        <div className="w-full">
           <h1 className={`${fontSize.hero} font-bold ${textColor.onDark} mb-6 leading-[1.1]`}>
-            完成你所看見的
-            <span className="block">美好</span>
+            <span className="flex justify-between items-end">
+              <span>完成你</span>
+              <span className="lg:translate-x-20">看見的美好</span>
+            </span>
           </h1>
-          <p className={`${fontSize.bodyLg} ${textColor.onDarkMuted} mb-10`}>
-            陪伴美業人，用數位化完成夢想
-          </p>
-          <Button
-            size="lg"
-            className={`${fontSize.button} px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-2xl`}
-          >
-            立即體驗
-          </Button>
+          <div className="max-w-full lg:max-w-[42%]">
+            <p className={`${fontSize.bodyLg} ${textColor.onDarkMuted} mb-10`}>
+              陪伴美業人，用數位化完成夢想
+            </p>
+            <Button
+              size="lg"
+              className={`${fontSize.button} px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-full`}
+            >
+              立即體驗
+            </Button>
+          </div>
         </div>
       </div>
     </section>

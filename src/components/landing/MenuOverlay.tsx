@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import Link from "next/link";
+import { PAGE_CONTENT_ID } from "@/constants/landing-styles";
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -34,7 +35,7 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
   useGSAP(() => {
     if (!panelRef.current) return;
 
-    const pageContent = document.getElementById("page-content");
+    const pageContent = document.getElementById(PAGE_CONTENT_ID);
     if (!pageContent) return;
 
     // 跳過初次渲染的關閉動畫
@@ -127,7 +128,19 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
     } else {
       document.body.style.overflow = "";
 
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({
+        onComplete: () => {
+          // 清除子元素的 inline style，避免 from() 設定的 opacity/transform 殘留
+          [menuItemsRef, subItemsRef, bottomRef].forEach((ref) => {
+            if (ref.current?.children) {
+              gsap.set(Array.from(ref.current.children), { clearProps: "all" });
+            }
+          });
+          if (topBarRef.current) {
+            gsap.set(topBarRef.current, { clearProps: "all" });
+          }
+        },
+      });
 
       // 選單收回上方，頁面內容回到原位
       tl.to(
