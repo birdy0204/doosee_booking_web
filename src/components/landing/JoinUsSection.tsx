@@ -9,6 +9,37 @@ import { fontSize, textColor } from "@/constants/landing-styles";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// 跑馬燈卡片資料 — 合作商家 & 知名個人 IP
+interface MarqueeCard {
+  name: string;
+  type: string;
+  gradient: string;
+}
+
+// 第一行：合作商家
+const marqueeRow1: MarqueeCard[] = [
+  { name: "FLUX Hair Salon", type: "髮廊 · 台北大安", gradient: "from-zinc-700 to-zinc-900" },
+  { name: "Belle Nails", type: "美甲 · 台中西區", gradient: "from-pink-500 to-rose-600" },
+  { name: "淨妍美學診所", type: "醫美 · 全台連鎖", gradient: "from-sky-400 to-blue-600" },
+  { name: "Oasis SPA", type: "SPA · 高雄左營", gradient: "from-teal-400 to-emerald-600" },
+  { name: "小紅書美甲", type: "美甲美睫 · 台北中山", gradient: "from-red-400 to-rose-500" },
+  { name: "MAVEN Hair", type: "髮廊 · 新竹竹北", gradient: "from-amber-500 to-orange-600" },
+  { name: "Aura Skincare", type: "護膚 · 台南東區", gradient: "from-violet-400 to-purple-600" },
+  { name: "Muse 紋繡學院", type: "紋繡 · 台北信義", gradient: "from-fuchsia-500 to-pink-600" },
+];
+
+// 第二行：知名個人 IP / KOL
+const marqueeRow2: MarqueeCard[] = [
+  { name: "Vicky 老師", type: "美睫技術講師 · 10 萬粉絲", gradient: "from-purple-500 to-indigo-600" },
+  { name: "Kevin 髮型師", type: "明星御用造型師", gradient: "from-zinc-600 to-zinc-800" },
+  { name: "小安老師", type: "日式美甲達人 · 8 萬粉絲", gradient: "from-rose-400 to-pink-500" },
+  { name: "Mia 皮膚管理師", type: "韓式皮膚管理專家", gradient: "from-sky-400 to-cyan-600" },
+  { name: "阿倫 Hair", type: "YouTube 髮型教學 · 25 萬訂閱", gradient: "from-red-500 to-orange-500" },
+  { name: "Sophia 紋繡師", type: "半永久紋繡冠軍", gradient: "from-amber-400 to-yellow-500" },
+  { name: "Lena 美學總監", type: "連鎖品牌創辦人", gradient: "from-emerald-400 to-teal-600" },
+  { name: "Ivy 造型師", type: "婚禮造型 · 12 萬粉絲", gradient: "from-fuchsia-400 to-purple-500" },
+];
+
 interface Step {
   title: string;
   description: string;
@@ -84,11 +115,39 @@ const JoinUsSection = () => {
       id="join-us"
       data-section-label="加入我們"
       ref={sectionRef}
-      className="py-20 lg:py-28 bg-background"
+      className="pb-20 lg:pb-28 bg-background"
     >
+      {/* 跑馬燈區塊 */}
+      <div className="mb-12 lg:mb-20 overflow-hidden bg-foreground py-10 lg:py-14">
+        {/* 第一行 — 合作商家，向左滾動 */}
+        <div className="flex animate-marquee-left w-max mb-4 lg:mb-6 hover:[animation-play-state:paused]">
+          {[...marqueeRow1, ...marqueeRow1].map((card, i) => (
+            <div
+              key={`r1-${i}`}
+              className={`shrink-0 w-[240px] lg:w-[280px] h-[120px] lg:h-[140px] mx-2 lg:mx-3 rounded-2xl bg-gradient-to-br ${card.gradient} p-5 lg:p-6 flex flex-col justify-between shadow-lg`}
+            >
+              <h4 className="text-white font-bold text-base lg:text-xl leading-tight">{card.name}</h4>
+              <p className="text-white/70 text-xs lg:text-sm">{card.type}</p>
+            </div>
+          ))}
+        </div>
+        {/* 第二行 — 知名個人 IP，向右滾動 */}
+        <div className="flex animate-marquee-right w-max hover:[animation-play-state:paused]">
+          {[...marqueeRow2, ...marqueeRow2].map((card, i) => (
+            <div
+              key={`r2-${i}`}
+              className={`shrink-0 w-[240px] lg:w-[280px] h-[120px] lg:h-[140px] mx-2 lg:mx-3 rounded-2xl bg-gradient-to-br ${card.gradient} p-5 lg:p-6 flex flex-col justify-between shadow-lg`}
+            >
+              <h4 className="text-white font-bold text-base lg:text-xl leading-tight">{card.name}</h4>
+              <p className="text-white/70 text-xs lg:text-sm">{card.type}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="container mx-auto px-4">
         {/* 標題 */}
-        <div className="mb-16">
+        <div className="mb-10 lg:mb-16">
           <h2
             className={`${fontSize.headingXl} font-bold ${textColor.onLight} tracking-tight`}
           >
@@ -107,15 +166,15 @@ const JoinUsSection = () => {
           {/* 全幅背景視覺區 */}
           <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted">
             {/* 步驟數字大字背景 */}
-            <span className="absolute top-8 right-12 text-[220px] lg:text-[300px] font-black text-foreground/[0.04] leading-none select-none">
+            <span className="absolute top-4 right-6 text-[160px] md:text-[220px] lg:text-[300px] font-black text-foreground/[0.04] leading-none select-none">
               {String(activeIndex + 1).padStart(2, "0")}
             </span>
 
-            {/* 右側步驟視覺（絕對定位於右半邊） */}
+            {/* 右側步驟視覺 — 僅桌面版 */}
             <div className="hidden lg:flex absolute right-0 top-0 bottom-0 w-[55%] items-center justify-center">
               <div className="flex flex-col items-center gap-10">
-                <div className="w-40 h-40 md:w-48 md:h-48 rounded-full bg-background/80 shadow-lg flex items-center justify-center">
-                  <span className="text-6xl md:text-7xl font-bold text-primary">
+                <div className="w-48 h-48 rounded-full bg-background/80 shadow-lg flex items-center justify-center">
+                  <span className="text-7xl font-bold text-primary">
                     {activeIndex + 1}
                   </span>
                 </div>
@@ -127,8 +186,6 @@ const JoinUsSection = () => {
                     Step {String(activeIndex + 1).padStart(2, "0")} of {String(steps.length).padStart(2, "0")}
                   </p>
                 </div>
-
-                {/* 進度點 */}
                 <div className="flex gap-4">
                   {steps.map((_, i) => (
                     <button
@@ -148,11 +205,65 @@ const JoinUsSection = () => {
             </div>
           </div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row min-h-[700px]">
-            {/* 左側：步驟列表 */}
-            <div className="lg:w-[45%] p-10 lg:p-16 flex items-center gap-4 relative">
+          {/* ===== 移動端佈局（< lg）===== */}
+          <div className="relative z-10 flex flex-col lg:hidden min-h-[520px]">
+            {/* 上方：步驟視覺區 */}
+            <div className="flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-6">
+              <div className="w-28 h-28 rounded-full bg-background/80 shadow-lg flex items-center justify-center mb-6">
+                <span className="text-4xl font-bold text-primary">
+                  {activeIndex + 1}
+                </span>
+              </div>
+              <h3 className={`text-2xl font-bold ${textColor.onLight} mb-2 text-center`}>
+                {steps[activeIndex].title}
+              </h3>
+              <p className={`${textColor.onLightMuted} text-xs mb-4`}>
+                Step {String(activeIndex + 1).padStart(2, "0")} of {String(steps.length).padStart(2, "0")}
+              </p>
+              <p className={`${textColor.onLightMuted} ${fontSize.tag} leading-relaxed text-center max-w-sm`}>
+                {steps[activeIndex].description}
+              </p>
+            </div>
+
+            {/* 底部：橫向 Tab 欄 */}
+            <div className="px-4 pb-6">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                {steps.map((step, i) => {
+                  const isActive = activeIndex === i;
+                  return (
+                    <button
+                      key={step.title}
+                      onClick={() => setActiveIndex(i)}
+                      className={`flex items-center gap-2.5 rounded-full px-5 py-3 whitespace-nowrap shrink-0 transition-all duration-300 cursor-pointer ${
+                        isActive
+                          ? "bg-foreground/10 backdrop-blur-sm"
+                          : "bg-muted/50 backdrop-blur-sm"
+                      }`}
+                    >
+                      <span
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold transition-all duration-300 ${
+                          isActive
+                            ? "bg-foreground text-background"
+                            : "bg-foreground/10 text-foreground"
+                        }`}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className={`text-sm font-semibold ${textColor.onLight}`}>
+                        {step.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* ===== 桌面版佈局（lg+）===== */}
+          <div className="relative z-10 hidden lg:flex lg:flex-row min-h-[700px]">
+            <div className="lg:w-[45%] p-16 flex items-center gap-4 relative">
               {/* 上下按鍵 */}
-              <div className="hidden lg:flex flex-col gap-3 shrink-0 absolute left-4 top-1/2 -translate-y-1/2">
+              <div className="flex flex-col gap-3 shrink-0 absolute left-4 top-1/2 -translate-y-1/2">
                 <button
                   onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
                   disabled={activeIndex === 0}
@@ -177,7 +288,7 @@ const JoinUsSection = () => {
                 </button>
               </div>
 
-              <div className="flex-1 flex flex-col lg:pl-12">
+              <div className="flex-1 flex flex-col pl-12">
                 {steps.map((step, index) => {
                   const isActive = activeIndex === index;
                   return (
@@ -220,42 +331,6 @@ const JoinUsSection = () => {
                     </div>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* 右側：手機版步驟視覺（桌面版已在全幅背景中） */}
-            <div className="lg:hidden flex items-center justify-center p-10 relative">
-              <div className="flex flex-col items-center gap-10">
-                <div className="w-40 h-40 rounded-full bg-background/80 shadow-lg flex items-center justify-center">
-                  <span className="text-6xl font-bold text-primary">
-                    {activeIndex + 1}
-                  </span>
-                </div>
-                <div className="text-center">
-                  <h3 className={`text-3xl font-bold ${textColor.onLight} mb-3`}>
-                    {steps[activeIndex].title}
-                  </h3>
-                  <p className={`${textColor.onLightMuted} text-base`}>
-                    Step {String(activeIndex + 1).padStart(2, "0")} of {String(steps.length).padStart(2, "0")}
-                  </p>
-                </div>
-
-                {/* 進度點 */}
-                <div className="flex gap-4">
-                  {steps.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveIndex(i)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${
-                        i === activeIndex
-                          ? "bg-foreground scale-125"
-                          : i < activeIndex
-                            ? "bg-foreground/40"
-                            : "bg-border"
-                      }`}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
           </div>

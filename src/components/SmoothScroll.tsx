@@ -18,6 +18,12 @@ const SmoothScroll = ({ children }: { children: React.ReactNode }) => {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
+    // 禁用瀏覽器的捲動位置恢復，重新整理時強制回到頂部
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

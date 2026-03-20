@@ -1,11 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useGSAP } from "@gsap/react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const SectionIndicator = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,40 +10,8 @@ const SectionIndicator = () => {
   const currentLabelRef = useRef<string>("");
   const [isDark, setIsDark] = useState(false);
 
-  useGSAP(() => {
-    const sections = gsap.utils.toArray<HTMLElement>(
-      "[data-section-label]"
-    );
-    if (sections.length === 0) return;
-
-    // 設定初始文字與編號
-    const firstLabel =
-      sections[0].getAttribute("data-section-label") || "";
-    const firstTheme = sections[0].getAttribute("data-section-theme");
-    if (labelRef.current) {
-      labelRef.current.textContent = firstLabel;
-      currentLabelRef.current = firstLabel;
-    }
-    if (numberRef.current) {
-      numberRef.current.textContent = "01";
-    }
-    setIsDark(firstTheme === "dark");
-
-    // 為每個 section 建立 ScrollTrigger
-    sections.forEach((section, index) => {
-      const label = section.getAttribute("data-section-label") || "";
-      const theme = section.getAttribute("data-section-theme");
-
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top center",
-        end: "bottom center",
-        onEnter: () => switchLabel(label, index, theme),
-        onEnterBack: () => switchLabel(label, index, theme),
-      });
-    });
-
-    function switchLabel(newLabel: string, activeIndex: number, theme: string | null) {
+  const switchLabel = useCallback(
+    (newLabel: string, activeIndex: number, theme: string | null) => {
       if (currentLabelRef.current === newLabel) return;
 
       // 中斷進行中的動畫，避免快速滾動時被跳過
@@ -80,8 +44,54 @@ const SectionIndicator = () => {
         { y: 12, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }
       );
+    },
+    []
+  );
+
+  useEffect(() => {
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-section-label]")
+    );
+    if (sections.length === 0) return;
+
+    // 設定初始文字與編號
+    const firstLabel = sections[0].getAttribute("data-section-label") || "";
+    const firstTheme = sections[0].getAttribute("data-section-theme");
+    if (labelRef.current) {
+      labelRef.current.textContent = firstLabel;
+      currentLabelRef.current = firstLabel;
     }
-  });
+    if (numberRef.current) {
+      numberRef.current.textContent = "01";
+    }
+    setIsDark(firstTheme === "dark");
+
+    // 用 getBoundingClientRect 判斷哪個 section 最接近畫面中央
+    const handleScroll = () => {
+      const viewportCenter = window.innerHeight / 2;
+      let activeIndex = 0;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const rect = sections[i].getBoundingClientRect();
+        // 找最後一個 top 還在畫面中央以上的 section
+        if (rect.top <= viewportCenter) {
+          activeIndex = i;
+          break;
+        }
+      }
+
+      const section = sections[activeIndex];
+      const label = section.getAttribute("data-section-label") || "";
+      const theme = section.getAttribute("data-section-theme");
+      switchLabel(label, activeIndex, theme);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // 初始觸發一次
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [switchLabel]);
 
   return (
     <div

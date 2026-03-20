@@ -4,30 +4,85 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import DooseeLogo from "./DooseeLogo";
+import { useFramePreload } from "@/contexts/FramePreloadContext";
 
 const PageReveal = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const numberRef = useRef<HTMLSpanElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
-  const counterObj = useRef({ value: 0 });
+  const displayProgress = useRef({ value: 0 });
+  const progressTweenRef = useRef<gsap.core.Tween | null>(null);
+  const exitPlayed = useRef(false);
   const [mounted, setMounted] = useState(false);
+
+  const { progress, ready } = useFramePreload();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // ── Logo 入場動畫 ──
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !logoRef.current) return;
+
+    // 鎖定滾動
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    // Logo 彈入
+    gsap.fromTo(
+      logoRef.current,
+      { scale: 0.5, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" },
+    );
+
+    // Logo 持續跳動（載入期間）
+    gsap.to(logoRef.current, {
+      scale: 1.06,
+      duration: 0.25,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 0.5,
+    });
+  }, [mounted]);
+
+  // ── 即時追蹤真實進度（0% → 95%）──
+  useEffect(() => {
+    if (!mounted || exitPlayed.current) return;
+    const bar = barRef.current;
+    const numberEl = numberRef.current;
+    if (!bar || !numberEl) return;
+
+    const target = progress * 95;
+
+    progressTweenRef.current?.kill();
+    progressTweenRef.current = gsap.to(displayProgress.current, {
+      value: target,
+      duration: 0.4,
+      ease: "power1.out",
+      onUpdate: () => {
+        const v = Math.round(displayProgress.current.value);
+        numberEl.textContent = String(v);
+        gsap.set(bar, { scaleX: v / 100 });
+      },
+    });
+  }, [progress, mounted]);
+
+  // ── 載入完成 → 95% → 100% 緩衝 → 退場 ──
+  useEffect(() => {
+    if (!ready || !mounted || exitPlayed.current) return;
+    exitPlayed.current = true;
+
+    // 停止進度追蹤 tween 與 Logo 跳動
+    progressTweenRef.current?.kill();
+    gsap.killTweensOf(logoRef.current);
+
     const container = containerRef.current;
     const bar = barRef.current;
     const numberEl = numberRef.current;
     if (!container || !bar || !numberEl) return;
-
-    // 鎖定滾動（注意：MenuOverlay 也會操控 body.overflow，
-    // 但 PageReveal 僅在初始載入時執行，完成後即釋放，不會與 MenuOverlay 衝突）
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -37,32 +92,17 @@ const PageReveal = () => {
       },
     });
 
-    // Logo 彈入動畫
-    tl.fromTo(
-      logoRef.current,
-      { scale: 0.5, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" },
-      0,
-    );
-
-    // Logo 跳動效果（載入期間）
-    tl.to(
-      logoRef.current,
-      { scale: 1.06, duration: 0.25, repeat: 5, yoyo: true, ease: "sine.inOut" },
-      0.5,
-    );
-
-    // 數字 0→100 + 進度條同步
-    tl.to(counterObj.current, {
+    // 從當前進度平滑過渡到 100%
+    tl.to(displayProgress.current, {
       value: 100,
-      duration: 1.8,
-      ease: "power2.inOut",
+      duration: 0.5,
+      ease: "power2.out",
       onUpdate: () => {
-        const v = Math.round(counterObj.current.value);
+        const v = Math.round(displayProgress.current.value);
         numberEl.textContent = String(v);
         gsap.set(bar, { scaleX: v / 100 });
       },
-    }, 0);
+    });
 
     // 短暫停頓讓使用者看到 100
     tl.to({}, { duration: 0.3 });
@@ -73,11 +113,7 @@ const PageReveal = () => {
       duration: 0.8,
       ease: "expo.in",
     });
-
-    return () => {
-      tl.kill();
-    };
-  }, [mounted]);
+  }, [ready, mounted]);
 
   const overlay = (
     <div
