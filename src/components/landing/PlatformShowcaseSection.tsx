@@ -41,6 +41,7 @@ const platforms: PlatformData[] = [
     description:
       "讓每位設計師掌握自己的節奏，輕鬆管理排班、業績與顧客關係。",
     icon: Smartphone,
+    image: "/iPhone_stylist.png",
     gradient: "from-violet-400 to-purple-500",
     features: ["個人排班", "業績追蹤", "顧客偏好", "作品集展示"],
   },
@@ -62,11 +63,11 @@ const PlatformCard = ({ platform }: { platform: PlatformData }) => {
   const Icon = platform.icon;
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center md:justify-start px-6 md:px-12 lg:px-20">
+    <div className="absolute inset-0 flex flex-col items-center justify-center pb-24 px-6 md:px-12 lg:px-20">
       {/* 圖片區 */}
       <div className="flex-shrink-0">
         {platform.images ? (
-          <div className="relative w-[500px] h-[340px] md:w-[840px] md:h-[540px] lg:w-[1320px] lg:h-[780px] mt-0 md:mt-16 lg:mt-16">
+          <div className="relative w-[500px] h-[340px] md:w-[840px] md:h-[540px] lg:w-[1320px] lg:h-[780px]">
             {/* 左側 — 旋轉後退 */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-6 z-0 w-[45%] origin-center">
               <Image
@@ -99,7 +100,7 @@ const PlatformCard = ({ platform }: { platform: PlatformData }) => {
             </div>
           </div>
         ) : platform.image ? (
-          <div className="mt-12 md:mt-16 lg:mt-20">
+          <div>
             <Image
               src={platform.image}
               alt={platform.title}
@@ -109,7 +110,7 @@ const PlatformCard = ({ platform }: { platform: PlatformData }) => {
             />
           </div>
         ) : (
-          <div className="mt-12 md:mt-16 lg:mt-20">
+          <div>
             <div
               className={`relative w-48 h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-3xl bg-gradient-to-br ${platform.gradient} flex items-center justify-center shadow-2xl overflow-hidden`}
             >
@@ -156,9 +157,12 @@ const PlatformShowcaseSection = () => {
 
   // 裝置展示 refs
   const phoneRef = useRef<HTMLDivElement>(null);
+  const stylistPhoneRef = useRef<HTMLDivElement>(null);
   const tabletRef = useRef<HTMLDivElement>(null);
   const deviceTitleRef = useRef<HTMLDivElement>(null);
   const deviceLayerRef = useRef<HTMLDivElement>(null);
+  const deviceLabelsRef = useRef<HTMLDivElement>(null);
+  const phoneIntroRef = useRef<HTMLDivElement>(null);
 
   // 平台介紹 refs
   const platformLayerRef = useRef<HTMLDivElement>(null);
@@ -169,20 +173,32 @@ const PlatformShowcaseSection = () => {
   useGSAP(
     () => {
       const phone = phoneRef.current;
+      const stylistPhone = stylistPhoneRef.current;
       const tablet = tabletRef.current;
       const deviceTitle = deviceTitleRef.current;
       const deviceLayer = deviceLayerRef.current;
+      const deviceLabels = deviceLabelsRef.current;
+      const phoneIntro = phoneIntroRef.current;
       const platformLayer = platformLayerRef.current;
       const tabBar = tabBarRef.current;
       if (
         !phone ||
+        !stylistPhone ||
         !tablet ||
         !deviceTitle ||
         !deviceLayer ||
+        !deviceLabels ||
+        !phoneIntro ||
         !platformLayer ||
         !tabBar
       )
         return;
+
+      // 裝置標籤 DOM
+      const labelTablet = deviceLabels.querySelector(".device-label-tablet") as HTMLElement;
+      const labelStylist = deviceLabels.querySelector(".device-label-stylist") as HTMLElement;
+      const labelClient = deviceLabels.querySelector(".device-label-client") as HTMLElement;
+      if (!labelTablet || !labelStylist || !labelClient) return;
 
       const mm = gsap.matchMedia();
 
@@ -195,36 +211,70 @@ const PlatformShowcaseSection = () => {
         (context) => {
           const { lg, md } = context.conditions!;
 
-          // 裝置動畫參數
-          const phoneInitialScale = lg ? 1.8 : md ? 1.5 : 1.3;
-          const phoneFinalX = lg ? 340 : md ? 250 : 130;
-          const phoneFinalY = lg ? 120 : md ? 90 : 60;
+          // 客戶端 iPhone 動畫參數
+          const phoneFinalX = lg ? 280 : md ? 200 : 120;
+          const phoneFinalY = lg ? 100 : md ? 75 : 50;
           const phoneFinalScale = lg ? 0.55 : md ? 0.55 : 0.6;
-          const tabletFinalX = lg ? -60 : md ? -40 : -20;
+
+          // 設計師 iPhone 動畫參數
+          const stylistFinalX = lg ? -280 : md ? -200 : -120;
+          const stylistFinalY = lg ? 100 : md ? 75 : 50;
+          const stylistFinalScale = lg ? 0.55 : md ? 0.55 : 0.6;
+
+          // iPad 動畫參數（改為居中）
+          const tabletFinalY = lg ? -10 : md ? -5 : 0;
           const yOffset = lg ? 30 : md ? 20 : 15;
 
-          // pin 裝置動畫 + 平台展示停留緩衝
-          const pinDuration = window.innerHeight * 2.5;
+          // 標籤位移參數（相對於各裝置位置）
+          const labelTabletY = lg ? -200 : md ? -160 : -120;
+          const labelPhoneY = lg ? 200 : md ? 160 : 110;
 
-          // 初始狀態
+          // pin 裝置動畫 + 平台展示停留緩衝
+          const pinDuration = window.innerHeight * 2.8;
+
+          // ===== 初始狀態 =====
+
+          // 兩支 iPhone 的初始位置參數（從中央靠攏開始）
+          const phoneInitialX = lg ? 80 : md ? 60 : 40;
+          const phoneInitialScale = lg ? 1.2 : md ? 1.0 : 0.9;
+
+          // 客戶端 iPhone：中央偏右
           gsap.set(phone, {
             xPercent: -50,
             yPercent: -50,
             scale: phoneInitialScale,
-            x: 0,
+            x: phoneInitialX,
             y: yOffset,
           });
+
+          // 設計師 iPhone：中央偏左
+          gsap.set(stylistPhone, {
+            xPercent: -50,
+            yPercent: -50,
+            scale: phoneInitialScale,
+            opacity: 1,
+            x: -phoneInitialX,
+            y: yOffset,
+          });
+
+          // iPad：中央下方，透明，稍小
           gsap.set(tablet, {
             xPercent: -50,
             yPercent: -50,
             opacity: 0,
             scale: 0.85,
-            x: tabletFinalX - 40,
-            y: yOffset,
+            x: 0,
+            y: tabletFinalY + 40,
           });
+
           gsap.set(deviceTitle, { opacity: 0, y: 30 });
           gsap.set(platformLayer, { opacity: 0 });
           gsap.set(tabBar, { opacity: 0, y: 20 });
+
+          // 標籤初始狀態
+          gsap.set(labelTablet, { opacity: 0, y: labelTabletY + 15, x: 0 });
+          gsap.set(labelStylist, { opacity: 0, y: labelPhoneY + 15, x: stylistFinalX });
+          gsap.set(labelClient, { opacity: 0, y: labelPhoneY + 15, x: phoneFinalX });
 
           const tl = gsap.timeline({
             scrollTrigger: {
@@ -241,60 +291,114 @@ const PlatformShowcaseSection = () => {
           // 動畫壓縮到前半段，後半段是平台展示停留
           const a = 0.7;
 
-          // ===== 裝置展示動畫（0 ~ a*0.7） =====
+          // ===== Phase 1：兩支 iPhone 從中央分開到左右兩側 =====
 
-          // 手機縮小並移到右下角
+          // 介紹文字淡出（手機開始移動時就淡出）
+          tl.to(
+            phoneIntro,
+            { opacity: 0, duration: a * 0.2, ease: "power1.in" },
+            0
+          );
+
+          // 客戶端 iPhone 移到右側
           tl.to(
             phone,
             {
               scale: phoneFinalScale,
               x: phoneFinalX,
               y: phoneFinalY,
-              duration: a * 0.5,
+              duration: a * 0.4,
               ease: "power2.inOut",
             },
             0
           );
 
-          // 平板淡入
+          // 設計師 iPhone 移到左側
+          tl.to(
+            stylistPhone,
+            {
+              scale: stylistFinalScale,
+              x: stylistFinalX,
+              y: stylistFinalY,
+              duration: a * 0.4,
+              ease: "power2.inOut",
+            },
+            0
+          );
+
+          // ===== Phase 2：iPad 從中間淡入 =====
+
+          // iPad 從下方淡入上移到中央
           tl.to(
             tablet,
             {
               opacity: 1,
               scale: 1,
-              x: tabletFinalX,
-              duration: a * 0.4,
+              x: 0,
+              y: tabletFinalY,
+              duration: a * 0.35,
               ease: "power2.out",
             },
             a * 0.1
           );
 
+          // ===== Phase 3：標題 + 裝置標籤淡入 =====
+
           // 標題淡入
           tl.to(
             deviceTitle,
-            { opacity: 1, y: 0, duration: a * 0.2, ease: "power2.out" },
-            a * 0.55
+            { opacity: 1, y: 0, duration: a * 0.15, ease: "power2.out" },
+            a * 0.48
           );
 
-          // ===== 過渡：裝置淡出 → 平台層浮現 =====
+          // 裝置標籤淡入（稍晚於標題）
+          tl.to(
+            labelTablet,
+            { opacity: 1, y: labelTabletY, duration: a * 0.12, ease: "power2.out" },
+            a * 0.52
+          );
+          tl.to(
+            labelStylist,
+            { opacity: 1, y: labelPhoneY, duration: a * 0.12, ease: "power2.out" },
+            a * 0.54
+          );
+          tl.to(
+            labelClient,
+            { opacity: 1, y: labelPhoneY, duration: a * 0.12, ease: "power2.out" },
+            a * 0.56
+          );
 
-          // 手機與標題先淡出
+          // ===== Phase 4：過渡 — 裝置淡出 → 平台層浮現 =====
+
+          // 兩支 iPhone 同時淡出
           tl.to(
             phone,
-            { opacity: 0, duration: a * 0.15, ease: "power1.in" },
-            a * 0.65
+            { opacity: 0, duration: a * 0.12, ease: "power1.in" },
+            a * 0.68
           );
           tl.to(
+            stylistPhone,
+            { opacity: 0, duration: a * 0.12, ease: "power1.in" },
+            a * 0.68
+          );
+
+          // 標題和標籤淡出
+          tl.to(
             deviceTitle,
-            { opacity: 0, duration: a * 0.15, ease: "power1.in" },
-            a * 0.65
+            { opacity: 0, duration: a * 0.12, ease: "power1.in" },
+            a * 0.68
+          );
+          tl.to(
+            deviceLabels,
+            { opacity: 0, duration: a * 0.12, ease: "power1.in" },
+            a * 0.68
           );
 
           // 平板放大並淡出（穿進螢幕的效果）
           tl.to(
             tablet,
-            { scale: 3, opacity: 0, duration: a * 0.3, ease: "power2.in" },
-            a * 0.7
+            { scale: 3, opacity: 0, duration: a * 0.28, ease: "power2.in" },
+            a * 0.72
           );
 
           // 平台層浮現
@@ -336,7 +440,7 @@ const PlatformShowcaseSection = () => {
         {/* 標題 */}
         <div
           ref={deviceTitleRef}
-          className="absolute top-[16%] md:top-[18%] left-0 right-0 z-10 text-center px-6"
+          className="absolute top-[14%] md:top-[12%] left-0 right-0 z-10 text-center px-6"
         >
           <h2
             className={`${fontSize.headingXl} font-bold ${textColor.onLight} mb-3`}
@@ -352,7 +456,7 @@ const PlatformShowcaseSection = () => {
 
         {/* 裝置 */}
         <div className="absolute inset-0">
-          {/* 平板（橫向） */}
+          {/* 平板（橫向，中央） */}
           <div
             ref={tabletRef}
             className="absolute top-1/2 left-1/2 w-[340px] md:w-[480px] lg:w-[620px]"
@@ -366,16 +470,79 @@ const PlatformShowcaseSection = () => {
             />
           </div>
 
-          {/* 手機 */}
-          <div ref={phoneRef} className="absolute top-1/2 left-1/2 z-20">
+          {/* 設計師 iPhone（左前方） */}
+          <div ref={stylistPhoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[500px]">
+            <Image
+              src="/iPhone_stylist.png"
+              alt="Doosee 設計師 APP 介面"
+              width={1195}
+              height={2434}
+              className="h-full w-auto drop-shadow-2xl"
+            />
+          </div>
+
+          {/* 客戶端 iPhone（右前方） */}
+          <div ref={phoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[500px]">
             <Image
               src="/AppPhone.png"
-              alt="Doosee APP 介面"
-              width={300}
-              height={600}
-              className="w-[180px] md:w-[220px] lg:w-[260px] h-auto drop-shadow-2xl"
+              alt="Doosee 客戶端 APP 介面"
+              width={674}
+              height={1280}
+              className="h-full w-auto drop-shadow-2xl"
               priority
             />
+          </div>
+        </div>
+
+        {/* 初始介紹文字（兩支手機並排時顯示，分開後隱藏） */}
+        <div ref={phoneIntroRef} className="absolute inset-0 z-20 pointer-events-none">
+          {/* 小螢幕：上方居中 */}
+          <div className="lg:hidden absolute inset-x-0 top-[14%] text-center px-6">
+            <h3 className="text-lg md:text-xl font-bold text-foreground">
+              設計師 APP ＆ 客戶端 APP
+            </h3>
+            <p className={`text-sm md:text-base ${textColor.onLightMuted} leading-relaxed mt-1`}>
+              從設計師管理到顧客預約，雙端協作一指搞定
+            </p>
+          </div>
+          {/* 大螢幕：左右兩側 */}
+          <div className="intro-left hidden lg:block absolute top-1/2 left-[15%] -translate-y-1/2 max-w-[260px] text-right">
+            <h3 className="text-2xl font-bold text-foreground mb-2">
+              設計師 APP
+            </h3>
+            <p className={`${fontSize.body} ${textColor.onLightMuted} leading-relaxed`}>
+              掌握自己的節奏，輕鬆管理排班、業績與顧客關係
+            </p>
+          </div>
+          <div className="intro-right hidden lg:block absolute top-1/2 right-[15%] -translate-y-1/2 max-w-[260px] text-left">
+            <h3 className="text-2xl font-bold text-foreground mb-2">
+              客戶端 APP
+            </h3>
+            <p className={`${fontSize.body} ${textColor.onLightMuted} leading-relaxed`}>
+              最順暢的預約體驗，從瀏覽作品到線上預約，一指搞定
+            </p>
+          </div>
+        </div>
+
+        {/* 裝置標籤 */}
+        <div ref={deviceLabelsRef} className="absolute inset-0 z-20 pointer-events-none">
+          {/* iPad 標籤 — 平板上方 */}
+          <div className="device-label-tablet absolute top-1/2 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <span className={`${fontSize.tag} font-medium ${textColor.onLightMuted} bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/50`}>
+              POS 系統
+            </span>
+          </div>
+          {/* 設計師 iPhone 標籤 — 手機下方 */}
+          <div className="device-label-stylist absolute top-1/2 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <span className={`${fontSize.tag} font-medium ${textColor.onLightMuted} bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/50`}>
+              設計師 APP
+            </span>
+          </div>
+          {/* 客戶端 iPhone 標籤 — 手機下方 */}
+          <div className="device-label-client absolute top-1/2 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <span className={`${fontSize.tag} font-medium ${textColor.onLightMuted} bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border/50`}>
+              客戶端 APP
+            </span>
           </div>
         </div>
       </div>
