@@ -1,5 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { fontSize, textColor } from '@/constants/landing-styles';
+"use client";
+
+import { Button } from "@heroui/button";
+import { fontSize, textColor } from "@/constants/landing-styles";
+import ContactFormModal from "@/components/landing/ContactFormModal";
 
 const HeroSection = () => {
   return (
@@ -19,12 +22,17 @@ const HeroSection = () => {
             <p className={`${fontSize.bodyLg} ${textColor.onDarkMuted} mb-10`}>
               陪伴美業人，用數位化完成夢想
             </p>
-            <Button
-              size="lg"
-              className={`${fontSize.button} px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-full`}
-            >
-              立即體驗
-            </Button>
+            <ContactFormModal>
+              {(onOpen) => (
+                <Button
+                  size="lg"
+                  onPress={onOpen}
+                  className={`${fontSize.button} px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-full`}
+                >
+                  立即體驗
+                </Button>
+              )}
+            </ContactFormModal>
           </div>
         </div>
       </div>

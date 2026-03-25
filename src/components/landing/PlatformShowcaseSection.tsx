@@ -63,11 +63,11 @@ const PlatformCard = ({ platform }: { platform: PlatformData }) => {
   const Icon = platform.icon;
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center pb-24 px-6 md:px-12 lg:px-20">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 lg:gap-4 pb-28 px-6 md:px-12 lg:px-20">
       {/* 圖片區 */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink min-h-0">
         {platform.images ? (
-          <div className="relative w-[500px] h-[340px] md:w-[840px] md:h-[540px] lg:w-[1320px] lg:h-[780px]">
+          <div className="relative w-[500px] h-[280px] md:w-[700px] md:h-[380px] lg:w-[1000px] lg:h-[min(500px,48vh)]">
             {/* 左側 — 旋轉後退 */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-6 z-0 w-[45%] origin-center">
               <Image
@@ -106,7 +106,7 @@ const PlatformCard = ({ platform }: { platform: PlatformData }) => {
               alt={platform.title}
               width={300}
               height={600}
-              className="w-[180px] md:w-[240px] lg:w-[300px] h-auto drop-shadow-2xl"
+              className="w-[180px] md:w-[240px] lg:w-[300px] h-auto max-h-[48vh] object-contain drop-shadow-2xl"
             />
           </div>
         ) : (
@@ -211,14 +211,17 @@ const PlatformShowcaseSection = () => {
         (context) => {
           const { lg, md } = context.conditions!;
 
+          // lg 時依據視窗高度動態計算，避免筆電螢幕內容重疊
+          const vh = window.innerHeight;
+
           // 客戶端 iPhone 動畫參數
           const phoneFinalX = lg ? 280 : md ? 200 : 120;
-          const phoneFinalY = lg ? 100 : md ? 75 : 50;
+          const phoneFinalY = lg ? vh * 0.12 : md ? 75 : 50;
           const phoneFinalScale = lg ? 0.55 : md ? 0.55 : 0.6;
 
           // 設計師 iPhone 動畫參數
           const stylistFinalX = lg ? -280 : md ? -200 : -120;
-          const stylistFinalY = lg ? 100 : md ? 75 : 50;
+          const stylistFinalY = lg ? vh * 0.12 : md ? 75 : 50;
           const stylistFinalScale = lg ? 0.55 : md ? 0.55 : 0.6;
 
           // iPad 動畫參數（改為居中）
@@ -226,8 +229,8 @@ const PlatformShowcaseSection = () => {
           const yOffset = lg ? 30 : md ? 20 : 15;
 
           // 標籤位移參數（相對於各裝置位置）
-          const labelTabletY = lg ? -200 : md ? -160 : -120;
-          const labelPhoneY = lg ? 200 : md ? 160 : 110;
+          const labelTabletY = lg ? -(vh * 0.22) : md ? -160 : -120;
+          const labelPhoneY = lg ? vh * 0.22 : md ? 160 : 110;
 
           // pin 裝置動畫 + 平台展示停留緩衝
           const pinDuration = window.innerHeight * 2.8;
@@ -459,7 +462,7 @@ const PlatformShowcaseSection = () => {
           {/* 平板（橫向，中央） */}
           <div
             ref={tabletRef}
-            className="absolute top-1/2 left-1/2 w-[340px] md:w-[480px] lg:w-[620px]"
+            className="absolute top-1/2 left-1/2 w-[340px] md:w-[480px] lg:w-[min(620px,58vh)]"
           >
             <Image
               src="/ipad_doosee.png"
@@ -471,7 +474,7 @@ const PlatformShowcaseSection = () => {
           </div>
 
           {/* 設計師 iPhone（左前方） */}
-          <div ref={stylistPhoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[500px]">
+          <div ref={stylistPhoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[min(500px,55vh)]">
             <Image
               src="/iPhone_stylist.png"
               alt="Doosee 設計師 APP 介面"
@@ -482,7 +485,7 @@ const PlatformShowcaseSection = () => {
           </div>
 
           {/* 客戶端 iPhone（右前方） */}
-          <div ref={phoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[500px]">
+          <div ref={phoneRef} className="absolute top-1/2 left-1/2 z-10 h-[340px] md:h-[420px] lg:h-[min(500px,55vh)]">
             <Image
               src="/AppPhone.png"
               alt="Doosee 客戶端 APP 介面"

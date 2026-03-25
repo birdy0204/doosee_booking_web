@@ -6,6 +6,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { Menu, X } from "lucide-react";
 import MenuOverlay from "./MenuOverlay";
 import DooseeLogo from "./DooseeLogo";
 import { textColor, LOGO_SCROLL_END } from "@/constants/landing-styles";
@@ -89,29 +90,11 @@ const Header = () => {
                   isMenuOpen ? "bg-white" : btnBg
                 }`}
               >
-                <div className="w-[18px] h-[12px] flex flex-col justify-between items-center">
-                  <span
-                    className={`block w-full h-[1.5px] rounded-full transition-all duration-500 origin-center ${
-                      isMenuOpen
-                        ? "bg-foreground rotate-45 translate-y-[5.25px]"
-                        : btnLine
-                    }`}
-                  />
-                  <span
-                    className={`block w-full h-[1.5px] rounded-full transition-all duration-500 ${
-                      isMenuOpen
-                        ? "bg-foreground opacity-0 scale-x-0"
-                        : btnLine
-                    }`}
-                  />
-                  <span
-                    className={`block w-full h-[1.5px] rounded-full transition-all duration-500 origin-center ${
-                      isMenuOpen
-                        ? "bg-foreground -rotate-45 -translate-y-[5.25px]"
-                        : btnLine
-                    }`}
-                  />
-                </div>
+                {isMenuOpen ? (
+                  <X className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+                ) : (
+                  <Menu className={`w-5 h-5 ${btnLine === "bg-black" ? "text-black" : "text-white"}`} strokeWidth={1.5} />
+                )}
               </div>
             </button>
 

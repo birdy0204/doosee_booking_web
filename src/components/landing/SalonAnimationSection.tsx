@@ -4,9 +4,10 @@ import { useRef, useEffect, useCallback } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Button } from "@/components/ui/button";
+import { Button } from "@heroui/button";
 import { fontSize, textColor } from "@/constants/landing-styles";
 import { useFramePreload, FRAME_COUNT } from "@/contexts/FramePreloadContext";
+import ContactFormModal from "@/components/landing/ContactFormModal";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -256,12 +257,17 @@ const SalonAnimationSection = () => {
                 {caption.description}
               </p>
               {isLast && (
-                <Button
-                  size="lg"
-                  className={`${fontSize.button} mt-8 px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-full`}
-                >
-                  立即體驗
-                </Button>
+                <ContactFormModal>
+                  {(onOpen) => (
+                    <Button
+                      size="lg"
+                      onPress={onOpen}
+                      className={`${fontSize.button} mt-8 px-12 py-8 font-semibold bg-white text-gray-900 hover:bg-white/90 hover:scale-105 transition-all rounded-full`}
+                    >
+                      立即體驗
+                    </Button>
+                  )}
+                </ContactFormModal>
               )}
             </div>
           </div>

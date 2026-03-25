@@ -5,9 +5,10 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Check, Clock, Shield, Zap, Gift } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@heroui/button";
+import { Chip } from "@heroui/chip";
 import { fontSize, textColor } from "@/constants/landing-styles";
+import ContactFormModal from "@/components/landing/ContactFormModal";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -262,7 +263,7 @@ function CountdownTimer({ endDate }: { endDate: Date }) {
 
 // ==================== 方案卡片 ====================
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, onOpenModal }: { plan: Plan; onOpenModal?: () => void }) {
   const isRecommended = plan.recommended;
 
   return (
@@ -275,9 +276,9 @@ function PlanCard({ plan }: { plan: Plan }) {
     >
       {isRecommended && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="bg-primary text-primary-foreground border-0 px-4 py-1 text-sm">
+          <Chip classNames={{ base: "bg-primary border-0 px-4 py-1", content: "text-primary-foreground text-sm" }}>
             最多人選擇
-          </Badge>
+          </Chip>
         </div>
       )}
 
@@ -304,6 +305,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       </ul>
 
       <Button
+        onPress={onOpenModal}
         className={`w-full rounded-xl py-6 ${fontSize.button} font-semibold cursor-pointer ${
           isRecommended
             ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -520,10 +522,12 @@ const JoinUsSection = () => {
           <div className="container mx-auto px-4 relative z-10">
             {/* 標題區 */}
             <div ref={promotionHeaderRef} className="text-center mb-12 lg:mb-16">
-              <Badge className="bg-primary/20 text-primary border-primary/30 mb-6 px-4 py-1.5">
-                <Clock className="w-3.5 h-3.5 mr-1.5" />
+              <Chip
+                startContent={<Clock className="w-3.5 h-3.5" />}
+                classNames={{ base: "bg-primary/20 border-primary/30 mb-6 px-4 py-1.5", content: "text-primary" }}
+              >
                 限時優惠
-              </Badge>
+              </Chip>
 
               <h2 className={`${fontSize.headingXl} font-bold ${textColor.onDark} mb-4`}>
                 現在加入，享最優惠方案
@@ -538,14 +542,18 @@ const JoinUsSection = () => {
             </div>
 
             {/* 方案卡片 */}
-            <div
-              ref={promotionCardsRef}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto mb-12 lg:mb-16"
-            >
-              {plans.map((plan) => (
-                <PlanCard key={plan.name} plan={plan} />
-              ))}
-            </div>
+            <ContactFormModal>
+              {(onOpen) => (
+                <div
+                  ref={promotionCardsRef}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto mb-12 lg:mb-16"
+                >
+                  {plans.map((plan) => (
+                    <PlanCard key={plan.name} plan={plan} onOpenModal={onOpen} />
+                  ))}
+                </div>
+              )}
+            </ContactFormModal>
 
             {/* 信任元素 */}
             <div
