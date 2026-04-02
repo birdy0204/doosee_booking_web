@@ -1,16 +1,57 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+
+// ==================== 表單驗證 ====================
+
+const loginSchema = z.object({
+  email: z.string().min(1, "請輸入 Email").email("Email 格式不正確"),
+  password: z.string().min(1, "請輸入密碼"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+// ==================== 主元件 ====================
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "admin@doosee.com", password: "Doosee@123" },
+  });
+
+  // 已登入時跳轉
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login({ email: data.email!, password: data.password! });
+    } catch {
+      toast.error("登入失敗，請確認帳號密碼");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
@@ -48,26 +89,48 @@ export default function LoginPage() {
         <div className="flex w-full flex-col justify-center px-8 py-12 md:w-1/2 md:px-12">
           <h1 className="mb-8 text-center text-xl font-semibold text-gray-900">歡迎登入</h1>
 
-          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); router.push("/dashboard"); }}>
-            <Input
-              label="Email"
-              type="email"
-              placeholder="youliaosucai@hotmail.com"
-              variant="bordered"
-              classNames={{ inputWrapper: "rounded-xl" }}
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  label="Email"
+                  type="email"
+                  placeholder="youliaosucai@hotmail.com"
+                  variant="bordered"
+                  classNames={{ inputWrapper: "rounded-xl" }}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  isInvalid={!!errors.email}
+                  errorMessage={errors.email?.message}
+                />
+              )}
             />
 
-            <Input
-              label="密碼"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              variant="bordered"
-              classNames={{ inputWrapper: "rounded-xl" }}
-              endContent={
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              }
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  label="密碼"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  variant="bordered"
+                  classNames={{ inputWrapper: "rounded-xl" }}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  isInvalid={!!errors.password}
+                  errorMessage={errors.password?.message}
+                  endContent={
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  }
+                />
+              )}
             />
 
             <div className="flex items-center justify-between">
@@ -78,7 +141,11 @@ export default function LoginPage() {
               <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">忘記密碼？</Link>
             </div>
 
-            <Button type="submit" className="w-full h-12 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600">
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              className="w-full h-12 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600"
+            >
               立即登入
             </Button>
           </form>

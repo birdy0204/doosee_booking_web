@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/dropdown";
 import { Avatar } from "@heroui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { title: "儀表盤", href: "/dashboard", icon: LayoutDashboard },
@@ -31,6 +32,11 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  const displayName = user?.userName ?? "使用者";
+  const displayEmail = user?.email ?? "";
+  const displayInitial = displayName.charAt(0);
 
   return (
     <aside className="flex h-screen w-[220px] shrink-0 p-4 pr-0">
@@ -94,10 +100,10 @@ export function AdminSidebar() {
         {/* 用戶資訊 + Dropdown */}
         <div className="border-t border-gray-100 pt-3">
           <div className="flex items-center gap-3 rounded-xl px-3 py-2">
-            <Avatar name="森" size="sm" classNames={{ base: "bg-blue-50 shrink-0", name: "text-blue-500 font-semibold" }} />
+            <Avatar name={displayInitial} size="sm" classNames={{ base: "bg-blue-50 shrink-0", name: "text-blue-500 font-semibold" }} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-gray-900 truncate">森森</p>
-              <p className="text-xs text-gray-400 truncate">admin@doosee.com</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+              <p className="text-xs text-gray-400 truncate">{displayEmail}</p>
             </div>
 
             <Dropdown placement="right-end">
@@ -115,10 +121,10 @@ export function AdminSidebar() {
                 <DropdownSection showDivider>
                   <DropdownItem key="profile" isReadOnly className="opacity-100">
                     <div className="flex items-center gap-3">
-                      <Avatar name="森" size="sm" classNames={{ base: "bg-blue-50 shrink-0", name: "text-blue-500 font-semibold" }} />
+                      <Avatar name={displayInitial} size="sm" classNames={{ base: "bg-blue-50 shrink-0", name: "text-blue-500 font-semibold" }} />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">森森</p>
-                        <p className="text-xs text-gray-400">admin@doosee.com</p>
+                        <p className="text-sm font-semibold text-gray-900">{displayName}</p>
+                        <p className="text-xs text-gray-400">{displayEmail}</p>
                       </div>
                     </div>
                   </DropdownItem>
@@ -135,7 +141,7 @@ export function AdminSidebar() {
                   </DropdownItem>
                 </DropdownSection>
                 <DropdownSection>
-                  <DropdownItem key="logout" startContent={<LogOut size={16} className="text-gray-500" />} className="text-danger" color="danger">
+                  <DropdownItem key="logout" startContent={<LogOut size={16} className="text-gray-500" />} className="text-danger" color="danger" onPress={logout}>
                     登出
                   </DropdownItem>
                 </DropdownSection>

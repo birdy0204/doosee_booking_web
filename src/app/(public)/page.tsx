@@ -3,6 +3,8 @@ import WhatIsDooseeSection from "@/components/landing/WhatIsDooseeSection";
 import PainPointsSection from "@/components/landing/PainPointsSection";
 import PlatformShowcaseSection from "@/components/landing/PlatformShowcaseSection";
 import JoinUsSection from "@/components/landing/JoinUsSection";
+import FAQSection from "@/components/landing/FAQSection";
+import PricingSection from "@/components/landing/PricingSection";
 
 export default function HomePage() {
   return (
@@ -11,7 +13,9 @@ export default function HomePage() {
       <WhatIsDooseeSection />
       <PainPointsSection />
       <PlatformShowcaseSection />
+      <FAQSection />
       <JoinUsSection />
+      <PricingSection />
     </>
   );
 }

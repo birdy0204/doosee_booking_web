@@ -56,7 +56,6 @@ const SectionIndicator = () => {
 
     // 設定初始文字與編號
     const firstLabel = sections[0].getAttribute("data-section-label") || "";
-    const firstTheme = sections[0].getAttribute("data-section-theme");
     if (labelRef.current) {
       labelRef.current.textContent = firstLabel;
       currentLabelRef.current = firstLabel;
@@ -64,7 +63,21 @@ const SectionIndicator = () => {
     if (numberRef.current) {
       numberRef.current.textContent = "01";
     }
-    setIsDark(firstTheme === "dark");
+
+    // 檢查指示器位置是否與任何深色區塊重疊
+    const checkDarkOverlap = () => {
+      if (!containerRef.current) return false;
+      const indicatorRect = containerRef.current.getBoundingClientRect();
+      const indicatorY = indicatorRect.top + indicatorRect.height / 2;
+      const darkSections = document.querySelectorAll<HTMLElement>(
+        '[data-section-theme="dark"]'
+      );
+      for (const dark of darkSections) {
+        const rect = dark.getBoundingClientRect();
+        if (indicatorY >= rect.top && indicatorY <= rect.bottom) return true;
+      }
+      return false;
+    };
 
     // 用 getBoundingClientRect 判斷哪個 section 最接近畫面中央
     const handleScroll = () => {
@@ -82,7 +95,8 @@ const SectionIndicator = () => {
 
       const section = sections[activeIndex];
       const label = section.getAttribute("data-section-label") || "";
-      const theme = section.getAttribute("data-section-theme");
+      // 以指示器實際位置判斷是否在深色區塊內
+      const theme = checkDarkOverlap() ? "dark" : null;
       switchLabel(label, activeIndex, theme);
     };
 
