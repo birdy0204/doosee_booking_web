@@ -493,6 +493,13 @@ export default function FormsPage() {
                       </div>
                     </div>
 
+                    {detailData.description && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">詳細描述</p>
+                        <p className="text-sm font-medium text-gray-900 whitespace-pre-wrap">{detailData.description}</p>
+                      </div>
+                    )}
+
                     <div className="border-t border-gray-100 pt-4 space-y-4">
                       <div>
                         <p className="text-xs text-gray-400 mb-2">處理狀態</p>

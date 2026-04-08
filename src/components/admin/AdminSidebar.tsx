@@ -8,26 +8,64 @@ import {
   ClipboardList,
   Users,
   FileText,
+  MessageCircleQuestion,
   Globe,
-  Settings,
-  CircleHelp,
-  Search,
   MoreVertical,
   UserCircle,
   CreditCard,
   Bell,
   LogOut,
+  Quote,
+  Tag,
+  Handshake,
+  Phone,
 } from "lucide-react";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/dropdown";
 import { Avatar } from "@heroui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 
-const navItems = [
-  { title: "儀表盤", href: "/dashboard", icon: LayoutDashboard },
-  { title: "表單資料", href: "/forms", icon: ClipboardList },
-  { title: "員工", href: "/staff", icon: Users },
-  { title: "內容管理", href: "/content", icon: FileText },
-  { title: "前端網站", href: "/", icon: Globe, external: true },
+interface NavItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number }>;
+  external?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: "總覽",
+    items: [
+      { title: "儀表盤", href: "/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "營運管理",
+    items: [
+      { title: "表單資料", href: "/forms", icon: ClipboardList },
+      { title: "員工", href: "/staff", icon: Users },
+    ],
+  },
+  {
+    label: "內容管理",
+    items: [
+      { title: "客戶見證", href: "/testimonials", icon: Quote },
+      { title: "優惠方案", href: "/plans", icon: Tag },
+      { title: "合作夥伴", href: "/partners", icon: Handshake },
+      { title: "常見問題", href: "/faqs", icon: MessageCircleQuestion },
+      { title: "聯絡資訊", href: "/contact", icon: Phone },
+    ],
+  },
+  {
+    label: "其他",
+    items: [
+      { title: "前端網站", href: "/", icon: Globe, external: true },
+    ],
+  },
 ];
 
 export function AdminSidebar() {
@@ -54,48 +92,42 @@ export function AdminSidebar() {
         </div>
 
         {/* 導航選單 */}
-        <nav>
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    {...("external" in item && item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                  >
-                    <item.icon size={18} />
-                    <span>{item.title}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        <nav className="space-y-4">
+          {navGroups.map((group, groupIndex) => (
+            <div key={group.label}>
+              {groupIndex > 0 && (
+                <div className="border-t border-gray-100 mb-3" />
+              )}
+              <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-300">
+                {group.label}
+              </p>
+              <ul className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                          isActive
+                            ? "bg-blue-500 text-white"
+                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        <item.icon size={18} />
+                        <span>{item.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
         {/* 中間留白 */}
         <div className="flex-1" />
-
-        {/* 底部功能選單 */}
-        <div className="space-y-1 border-t border-gray-100 pt-3">
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900">
-            <Settings size={18} />
-            設定
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900">
-            <CircleHelp size={18} />
-            取得協助
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900">
-            <Search size={18} />
-            搜尋
-          </button>
-        </div>
 
         {/* 用戶資訊 + Dropdown */}
         <div className="border-t border-gray-100 pt-3">

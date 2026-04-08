@@ -59,6 +59,185 @@ export interface CurrentUserDto {
   roles: string[];
 }
 
+// ==================== 角色 ====================
+
+export interface RoleDto {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  isStatic: boolean;
+}
+
+// ==================== 使用者 ====================
+
+export interface UserDto {
+  id: string;
+  userName: string;
+  email: string;
+  name?: string;
+  surname?: string;
+  phoneNumber?: string;
+  isActive: boolean;
+  roles: string[];
+  creationTime: string;
+  lastModificationTime?: string;
+}
+
+export interface CreateUserDto {
+  userName: string;
+  email: string;
+  password: string;
+  name?: string;
+  surname?: string;
+  phoneNumber?: string;
+  roles?: string[];
+}
+
+export interface UpdateUserDto {
+  userName: string;
+  email: string;
+  name?: string;
+  surname?: string;
+  phoneNumber?: string;
+  isActive?: boolean;
+  password?: string;
+  roles?: string[];
+}
+
+// ==================== 合作夥伴分類 ====================
+
+/** 合作夥伴分類 */
+export enum PartnerCategory {
+  /** 公司 */
+  Company = 0,
+  /** 個人品牌 */
+  PersonalBrand = 1,
+}
+
+// ==================== FAQ 常見問題 ====================
+
+export interface FaqDto {
+  id: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+  isPublished: boolean;
+  creationTime: string;
+  lastModificationTime?: string;
+}
+
+export interface CreateUpdateFaqDto {
+  question: string;
+  answer: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+}
+
+// ==================== 客戶見證 ====================
+
+export interface TestimonialDto {
+  id: string;
+  authorName: string;
+  authorTitle?: string;
+  content: string;
+  sortOrder: number;
+  isPublished: boolean;
+  creationTime: string;
+  lastModificationTime?: string;
+}
+
+export interface CreateUpdateTestimonialDto {
+  authorName: string;
+  authorTitle?: string;
+  content: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+}
+
+// ==================== 合作夥伴 ====================
+
+export interface PartnerDto {
+  id: string;
+  name: string;
+  logoUrl: string;
+  websiteUrl?: string;
+  category: PartnerCategory;
+  sortOrder: number;
+  creationTime: string;
+  lastModificationTime?: string;
+}
+
+export interface CreateUpdatePartnerDto {
+  name: string;
+  logoUrl: string;
+  websiteUrl?: string;
+  category: PartnerCategory;
+  sortOrder?: number;
+}
+
+// ==================== 方案定價 ====================
+
+export interface PricingPlanFeatureDto {
+  id: string;
+  text: string;
+  sortOrder: number;
+}
+
+export interface CreateUpdatePricingPlanFeatureDto {
+  text: string;
+  sortOrder?: number;
+}
+
+export interface PricingPlanDto {
+  id: string;
+  name: string;
+  description?: string;
+  price: number | null;
+  originalPrice: number | null;
+  period?: string;
+  ctaText?: string;
+  isRecommended: boolean;
+  isPublished: boolean;
+  sortOrder: number;
+  features: PricingPlanFeatureDto[];
+  creationTime: string;
+  lastModificationTime?: string;
+}
+
+export interface CreateUpdatePricingPlanDto {
+  name: string;
+  description?: string;
+  price?: number | null;
+  originalPrice?: number | null;
+  period?: string;
+  ctaText?: string;
+  isRecommended?: boolean;
+  isPublished?: boolean;
+  sortOrder?: number;
+  features: CreateUpdatePricingPlanFeatureDto[];
+}
+
+// ==================== 聯絡資訊（單一記錄） ====================
+
+export interface ContactInfoDto {
+  id: string;
+  email: string;
+  phone: string;
+  address: string;
+  facebook: string;
+  instagram: string;
+  line: string;
+}
+
+export interface UpdateContactInfoDto {
+  email: string;
+  phone: string;
+  address: string;
+  facebook: string;
+  instagram: string;
+  line: string;
+}
+
 // ==================== 表單提交 ====================
 
 export interface FormSubmissionDto {
@@ -68,6 +247,7 @@ export interface FormSubmissionDto {
   phone?: string;
   salonName?: string;
   service?: string;
+  description?: string;
   source: FormSource;
   status: FormStatus;
   note?: string;
@@ -81,6 +261,7 @@ export interface CreateFormSubmissionDto {
   phone?: string;
   salonName?: string;
   service?: string;
+  description?: string;
   source?: FormSource;
 }
 

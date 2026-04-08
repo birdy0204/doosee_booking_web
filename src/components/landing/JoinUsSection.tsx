@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { fontSize, textColor } from "@/constants/landing-styles";
+import { useTestimonialList } from "@/hooks/useTestimonials";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,53 +40,28 @@ const marqueeRow2: MarqueeCard[] = [
   { name: "Ivy 造型師", type: "婚禮造型 · 12 萬粉絲", gradient: "from-fuchsia-400 to-purple-500" },
 ];
 
-// ==================== 客戶見證資料 ====================
+// ==================== 客戶見證：漸層色與縮寫生成 ====================
 
-interface Testimonial {
-  name: string;
-  role: string;
-  quote: string;
-  initials: string;
-  gradient: string;
-}
-
-const testimonials: Testimonial[] = [
-  {
-    name: "FLUX Hair Salon",
-    role: "台北大安 · 髮廊",
-    quote: "「導入 Doosee 後，我們的預約管理效率提升了 60%。客人可以隨時線上預約，設計師也能清楚掌握自己的行程。再也不用花時間接電話排預約了。」",
-    initials: "FH",
-    gradient: "from-zinc-700 to-zinc-900",
-  },
-  {
-    name: "Belle Nails",
-    role: "台中西區 · 美甲",
-    quote: "「以前用紙本記帳，每個月結算都要花一整天。現在用 Doosee 的報表功能，營收、業績一目了然，省下的時間可以多服務好幾位客人。」",
-    initials: "BN",
-    gradient: "from-pink-500 to-rose-600",
-  },
-  {
-    name: "Vicky 老師",
-    role: "美睫技術講師 · 10 萬粉絲",
-    quote: "「身為自由接案的美睫師，最怕客人放鴿子。Doosee 的預約確認和提醒功能，讓我的爽約率從 15% 降到不到 3%，收入穩定多了。」",
-    initials: "VT",
-    gradient: "from-purple-500 to-indigo-600",
-  },
-  {
-    name: "淨妍美學診所",
-    role: "醫美 · 全台連鎖",
-    quote: "「管理 8 間分店的排班和預約曾經是噩夢。Doosee 的多門市管理功能讓我在一個後台就能掌控全局，決策速度快了三倍。」",
-    initials: "淨",
-    gradient: "from-sky-400 to-blue-600",
-  },
-  {
-    name: "Kevin 髮型師",
-    role: "明星御用造型師",
-    quote: "「客人從 APP 直接看作品集就能預約，轉換率超高。而且回訪提醒功能讓老客人回流率提升了 40%，真的很有感。」",
-    initials: "KH",
-    gradient: "from-zinc-600 to-zinc-800",
-  },
+const gradients = [
+  "from-zinc-700 to-zinc-900",
+  "from-pink-500 to-rose-600",
+  "from-purple-500 to-indigo-600",
+  "from-sky-400 to-blue-600",
+  "from-zinc-600 to-zinc-800",
+  "from-teal-400 to-emerald-600",
+  "from-amber-500 to-orange-600",
+  "from-fuchsia-500 to-pink-600",
 ];
+
+/** 從名稱取得縮寫（英文取首字母，中文取第一字） */
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (/^[\u4e00-\u9fff]/.test(name)) return name.charAt(0);
+  return words
+    .slice(0, 2)
+    .map((w) => w.charAt(0).toUpperCase())
+    .join("");
+}
 
 // ==================== 加入步驟資料 ====================
 
@@ -135,6 +111,26 @@ const JoinUsSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const testimonialRef = useRef<HTMLDivElement>(null);
+
+  const { data: testimonialData } = useTestimonialList({
+    maxResultCount: 50,
+    sorting: "SortOrder ASC",
+  });
+
+  const testimonials = useMemo(
+    () =>
+      (testimonialData?.items ?? [])
+        .filter((t) => t.isPublished)
+        .map((t, i) => ({
+          id: t.id,
+          name: t.authorName,
+          role: t.authorTitle ?? "",
+          quote: `「${t.content}」`,
+          initials: getInitials(t.authorName),
+          gradient: gradients[i % gradients.length],
+        })),
+    [testimonialData],
+  );
 
   const scrollTestimonial = useCallback((direction: "left" | "right") => {
     const container = testimonialRef.current;
@@ -243,7 +239,7 @@ const JoinUsSection = () => {
             >
               {testimonials.map((t) => (
                 <div
-                  key={t.name}
+                  key={t.id}
                   className="shrink-0 w-[80vw] md:w-[44vw] lg:w-[38vw] bg-background rounded-2xl p-8 lg:p-10 flex flex-col"
                 >
                   <div

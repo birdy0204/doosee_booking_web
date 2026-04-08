@@ -1,7 +1,12 @@
-import { Facebook, Instagram, MessageCircle, Mail, Phone, MapPin } from 'lucide-react';
-import { fontSize } from '@/constants/landing-styles';
+"use client";
+
+import { Facebook, Instagram, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
+import { fontSize } from "@/constants/landing-styles";
+import { useContactInfo } from "@/hooks/useContactInfo";
 
 const Footer = () => {
+  const { data: contact } = useContactInfo();
+
   return (
     <footer id="contact" className="bg-foreground text-background py-12 lg:py-16">
       <div className="container mx-auto px-4">
@@ -14,21 +19,27 @@ const Footer = () => {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href={contact?.facebook ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href={contact?.instagram ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href={contact?.line ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="LINE"
               >
@@ -52,7 +63,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className={`${fontSize.body} text-background/80 hover:text-primary transition-colors`}>
+                <a href="#faq" className={`${fontSize.body} text-background/80 hover:text-primary transition-colors`}>
                   常見問題
                 </a>
               </li>
@@ -70,15 +81,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className={`flex items-center gap-3 ${fontSize.body} text-background/80`}>
                 <Mail className="w-5 h-5 text-primary" />
-                <span>contact@doosee.com</span>
+                <span>{contact?.email ?? ""}</span>
               </li>
               <li className={`flex items-center gap-3 ${fontSize.body} text-background/80`}>
                 <Phone className="w-5 h-5 text-primary" />
-                <span>02-1234-5678</span>
+                <span>{contact?.phone ?? ""}</span>
               </li>
               <li className={`flex items-start gap-3 ${fontSize.body} text-background/80`}>
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <span>台北市信義區信義路五段7號</span>
+                <span>{contact?.address ?? ""}</span>
               </li>
             </ul>
           </div>

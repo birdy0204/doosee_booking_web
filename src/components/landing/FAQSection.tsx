@@ -6,53 +6,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Accordion, AccordionItem } from "@heroui/accordion";
 import { fontSize, textColor } from "@/constants/landing-styles";
+import { useFaqList } from "@/hooks/useFaqs";
 
 gsap.registerPlugin(ScrollTrigger);
-
-// ==================== 常見問題資料 ====================
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const faqItems: FAQItem[] = [
-  {
-    question: "Doosee 適合哪些類型的美業店家？",
-    answer:
-      "Doosee 適用於所有美業類型，包含髮廊、美甲、美睫、美容 SPA、紋繡、醫美診所等。無論您是個人工作室、單店經營還是多門市連鎖品牌，都能找到最適合的使用方式。",
-  },
-  {
-    question: "免費試用期間有功能限制嗎？",
-    answer:
-      "沒有！14 天免費試用期間可以使用 Doosee 的所有完整功能，包含預約管理、顧客管理、數據報表等，讓您充分體驗系統帶來的便利。試用期間無需綁定信用卡，結束後不會自動扣款。",
-  },
-  {
-    question: "導入 Doosee 需要多久時間？",
-    answer:
-      "從帳號開通到正式上線，最快只需要 1-3 個工作天。我們的專屬顧問會協助您完成初始設定、資料匯入與教育訓練，確保您和團隊都能順利上手。",
-  },
-  {
-    question: "可以從其他系統搬遷過來嗎？",
-    answer:
-      "可以！我們提供免費的資料搬遷服務，協助您將現有的顧客資料、預約紀錄等從舊系統匯入 Doosee。專屬顧問會全程協助，確保資料完整無遺漏。",
-  },
-  {
-    question: "Doosee 支援哪些付款方式？",
-    answer:
-      "我們支援信用卡（Visa、MasterCard、JCB）及銀行轉帳等付款方式。年繳方案還可享有額外折扣優惠。",
-  },
-  {
-    question: "系統當機或遇到問題怎麼辦？",
-    answer:
-      "Doosee 採用雲端架構，系統穩定度達 99.9%。若遇到任何問題，我們提供即時線上客服支援，付費方案更享有優先專屬客服通道，確保在 24 小時內回覆並解決您的問題。",
-  },
-  {
-    question: "合約期間可以升級或降級方案嗎？",
-    answer:
-      "當然可以！您可以隨時升級方案以享受更多功能。降級方案則會在當期結束後生效。我們的顧問會根據您的使用需求，推薦最適合的方案。",
-  },
-];
 
 // ==================== 主元件 ====================
 
@@ -60,6 +16,11 @@ const FAQSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const accordionRef = useRef<HTMLDivElement>(null);
+
+  const { data } = useFaqList({ maxResultCount: 50, sorting: "SortOrder ASC" });
+
+  // 只顯示已發佈的 FAQ
+  const faqItems = (data?.items ?? []).filter((item) => item.isPublished);
 
   useGSAP(
     () => {
@@ -102,6 +63,8 @@ const FAQSection = () => {
     { scope: sectionRef, dependencies: [] }
   );
 
+  if (faqItems.length === 0) return null;
+
   return (
     <section
       id="faq"
@@ -138,9 +101,9 @@ const FAQSection = () => {
                 indicator: `${textColor.onLightMuted}`,
               }}
             >
-              {faqItems.map((item, index) => (
+              {faqItems.map((item) => (
                 <AccordionItem
-                  key={index}
+                  key={item.id}
                   aria-label={item.question}
                   title={item.question}
                 >

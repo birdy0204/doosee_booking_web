@@ -12,7 +12,7 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
-import { Input } from "@heroui/input";
+import { Input, Textarea } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
 import { InputOtp } from "@heroui/input-otp";
@@ -25,6 +25,7 @@ const step1Schema = z.object({
   salonName: z.string().optional(),
   name: z.string().min(1, "請輸入您的姓名"),
   service: z.string().min(1, "請選擇諮詢服務"),
+  description: z.string().optional(),
 });
 
 const step2Schema = z
@@ -81,7 +82,7 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
   // 步驟一表單
   const step1Form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
-    defaultValues: { salonName: "", name: "", service: "" },
+    defaultValues: { salonName: "", name: "", service: "", description: "" },
   });
 
   // 步驟二表單
@@ -138,6 +139,7 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
         name: step1Data.name,
         salonName: step1Data.salonName || undefined,
         service: step1Data.service || undefined,
+        description: step1Data.description || undefined,
         email: step2Data.verifyMethod === "email" ? step2Data.email! : "",
         phone: step2Data.verifyMethod === "phone" ? step2Data.phone! : undefined,
         source: FormSource.Website,
@@ -174,6 +176,7 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
         backdrop="blur"
         size="lg"
         isDismissable={false}
+        autoFocus={false}
         classNames={{
           base: "bg-white dark:bg-zinc-900",
           header: "border-b border-zinc-100 dark:border-zinc-800",
@@ -244,6 +247,15 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
                         </Select>
                       )}
                     />
+
+                    <Textarea
+                      label="詳細描述"
+                      placeholder="請簡述您的需求或想了解的內容"
+                      variant="bordered"
+                      minRows={3}
+                      {...step1Form.register("description")}
+                      description="選填"
+                    />
                   </ModalBody>
 
                   <ModalFooter>
@@ -297,12 +309,11 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
                           <Button
                             type="button"
                             size="sm"
-                            variant="flat"
                             color="primary"
                             isLoading={sendingCode}
                             isDisabled={countdown > 0}
                             onPress={handleSendCode}
-                            className="shrink-0 font-medium"
+                            className="shrink-0 font-medium bg-primary text-white"
                           >
                             {countdown > 0 ? `${countdown}s` : "發送驗證碼"}
                           </Button>
@@ -322,12 +333,11 @@ export default function ContactFormModal({ children }: ContactFormModalProps) {
                           <Button
                             type="button"
                             size="sm"
-                            variant="flat"
                             color="primary"
                             isLoading={sendingCode}
                             isDisabled={countdown > 0}
                             onPress={handleSendCode}
-                            className="shrink-0 font-medium"
+                            className="shrink-0 font-medium bg-primary text-white"
                           >
                             {countdown > 0 ? `${countdown}s` : "發送驗證碼"}
                           </Button>

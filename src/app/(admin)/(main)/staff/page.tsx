@@ -1,36 +1,37 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Plus, Filter, MoreVertical, CalendarDays, Clock, Search, X, ChevronDown, Info } from "lucide-react";
+import { Plus, MoreVertical, Search, Shield, Pencil, Users } from "lucide-react";
 import { Pagination } from "@heroui/pagination";
 import { Button } from "@heroui/button";
-import { Tabs, Tab } from "@heroui/tabs";
 import { Input } from "@heroui/input";
-import { Checkbox } from "@heroui/checkbox";
 import { Chip } from "@heroui/chip";
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/table";
 import { Select, SelectItem } from "@heroui/select";
 import { Avatar } from "@heroui/avatar";
-import { AdminDrawer } from "@/components/admin/AdminDrawer";
+import { Spinner } from "@heroui/spinner";
+import { useUserList } from "@/hooks/useUsers";
+import { useRoleList } from "@/hooks/useRoles";
+import type { UserDto, RoleDto } from "@/types/api";
 
-const staffData = [
-  { id: 1, name: "森森", email: "youliaosucai@hmail.com", gender: "女", birthday: "1995-05-12", age: 28, position: "UI/UX 設計師", level: "中級", levelType: "primary" as const },
-  { id: 2, name: "張偉成", email: "youliaosucai@hmail.com", gender: "男", birthday: "1995-05-12", age: 28, position: "UI/UX 設計師", level: "中級", levelType: "primary" as const },
-  { id: 3, name: "王一月", email: "youliaosucai@hmail.com", gender: "女", birthday: "1995-05-12", age: 28, position: "文案", level: "初級", levelType: "default" as const },
-  { id: 4, name: "李鶴軒", email: "youliaosucai@hmail.com", gender: "女", birthday: "1995-05-12", age: 28, position: "文案", level: "中級", levelType: "primary" as const },
-  { id: 5, name: "甄博超", email: "youliaosucai@hmail.com", gender: "男", birthday: "1995-05-12", age: 28, position: "iOS開發", level: "高級", levelType: "warning" as const },
-  { id: 6, name: "段欣怡", email: "youliaosucai@hmail.com", gender: "女", birthday: "1995-05-12", age: 28, position: "UI界面設計師", level: "高級", levelType: "warning" as const },
-  { id: 7, name: "嚴瑞元", email: "youliaosucai@hmail.com", gender: "男", birthday: "1995-05-12", age: 28, position: "Android開發", level: "高級", levelType: "warning" as const },
-  { id: 8, name: "王小祥", email: "youliaosucai@hmail.com", gender: "女", birthday: "1995-05-12", age: 28, position: "UE交互設計師", level: "高級", levelType: "warning" as const },
+// ==================== 常數設定 ====================
+
+const userColumns = [
+  { key: "name", label: "姓名" },
+  { key: "email", label: "Email" },
+  { key: "phoneNumber", label: "電話" },
+  { key: "roles", label: "角色" },
+  { key: "isActive", label: "狀態" },
+  { key: "creationTime", label: "建立時間" },
+  { key: "actions", label: "" },
 ];
 
-const columns = [
-  { key: "name", label: "姓名" },
-  { key: "gender", label: "性別" },
-  { key: "birthday", label: "生日" },
-  { key: "age", label: "年齡" },
-  { key: "position", label: "職位" },
+const roleColumns = [
+  { key: "name", label: "職位" },
+  { key: "permissions", label: "權限" },
+  { key: "count", label: "人數" },
+  { key: "isDefault", label: "預設" },
   { key: "actions", label: "" },
 ];
 
@@ -40,32 +41,109 @@ const rowsPerPageOptions = [
   { key: "15", label: "15" },
 ];
 
+// ==================== 工具函式 ====================
+
+function getDisplayName(user: UserDto): string {
+  const parts = [user.surname, user.name].filter(Boolean);
+  return parts.length > 0 ? parts.join("") : user.userName;
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
+function getRoleLabel(name: string): string {
+  const map: Record<string, string> = {
+    admin: "管理員",
+    editor: "編輯者",
+    viewer: "檢視者",
+  };
+  return map[name] ?? name;
+}
+
+/** 角色對應的權限描述 */
+function getRolePermissions(name: string): string[] {
+  const map: Record<string, string[]> = {
+    admin: ["完整管理", "使用者管理", "內容管理", "系統設定"],
+    editor: ["內容管理", "表單管理", "檔案上傳"],
+    viewer: ["檢視內容", "檢視表單"],
+  };
+  return map[name] ?? ["基本存取"];
+}
+
+function getRoleChipColor(name: string): "warning" | "primary" | "success" | "default" {
+  const map: Record<string, "warning" | "primary" | "success"> = {
+    admin: "warning",
+    editor: "primary",
+    viewer: "success",
+  };
+  return map[name] ?? "default";
+}
+
+// ==================== 主元件 ====================
+
 export default function StaffPage() {
-  const [viewMode, setViewMode] = useState("0");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [search, setSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  const [filterGroups, setFilterGroups] = useState<Record<string, boolean>>({
-    設計組: true, 研發組: false, 測試組: false, 營銷組: false, 項目管理組: false,
+  // 呼叫 API
+  const { data: userData, isLoading: usersLoading, isError } = useUserList({
+    skipCount: (page - 1) * rowsPerPage,
+    maxResultCount: rowsPerPage,
+    sorting: "CreationTime DESC",
   });
-  const [filterReporters, setFilterReporters] = useState<Record<string, boolean>>({
-    張偉成: true, 王一月: false, 李鶴軒: false, 甄博超: false, 段欣怡: false,
-  });
-  const [selectedExecutors, setSelectedExecutors] = useState(["于偉旗", "于偉旗", "有料", "森森", "嚴瑞元"]);
-  const [priority, setPriority] = useState("中");
+  // 取得全部使用者（用於角色人數統計）
+  const { data: allUserData } = useUserList({ maxResultCount: 1000 });
+  const { data: roleData, isLoading: rolesLoading } = useRoleList();
 
-  const filterCount = Object.values(filterGroups).filter(Boolean).length
-    + Object.values(filterReporters).filter(Boolean).length
-    + (priority ? 1 : 0);
+  const users = userData?.items ?? [];
+  const totalCount = userData?.totalCount ?? 0;
+  const allUsers = allUserData?.items ?? [];
+  const roles = roleData?.items ?? [];
 
-  const totalStaff = 28;
-  const totalPages = Math.ceil(staffData.length / rowsPerPage);
-  const paginatedStaff = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    return staffData.slice(start, start + rowsPerPage);
-  }, [page, rowsPerPage]);
+  // 用全部使用者計算每個角色的人數
+  const roleUserCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    allUsers.forEach((u) => {
+      (u.roles ?? []).forEach((role) => {
+        map.set(role, (map.get(role) || 0) + 1);
+      });
+    });
+    return map;
+  }, [allUsers]);
+
+  // 前端篩選（搜尋 + 角色）
+  const filtered = useMemo(() => {
+    let result = [...users];
+
+    if (selectedRole) {
+      result = result.filter((u) =>
+        (u.roles ?? []).includes(selectedRole),
+      );
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (u) =>
+          getDisplayName(u).toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          u.userName.toLowerCase().includes(q) ||
+          (u.phoneNumber && u.phoneNumber.includes(q)),
+      );
+    }
+
+    return result;
+  }, [users, selectedRole, search]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
 
   const onRowsPerPageChange = useCallback((keys: Set<string> | "all") => {
     if (keys === "all") return;
@@ -76,29 +154,111 @@ export default function StaffPage() {
     }
   }, []);
 
-  const renderCell = useCallback((staff: typeof staffData[0], columnKey: string) => {
+  // ==================== 角色表格 Cell 渲染 ====================
+
+  const renderRoleCell = (role: RoleDto, columnKey: string) => {
+    switch (columnKey) {
+      case "name":
+        return (
+          <div className="flex items-center gap-3">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+              role.name === "admin" ? "bg-amber-50" : role.name === "editor" ? "bg-blue-50" : "bg-green-50"
+            }`}>
+              <Shield size={16} className={
+                role.name === "admin" ? "text-amber-500" : role.name === "editor" ? "text-blue-500" : "text-green-500"
+              } />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">{getRoleLabel(role.name)}</p>
+              <p className="text-xs text-gray-400">{role.name}</p>
+            </div>
+          </div>
+        );
+      case "permissions":
+        return (
+          <div className="flex items-center gap-1 flex-wrap">
+            {getRolePermissions(role.name).map((perm) => (
+              <Chip key={perm} size="sm" variant="flat" color={getRoleChipColor(role.name)}>
+                {perm}
+              </Chip>
+            ))}
+          </div>
+        );
+      case "count":
+        return (
+          <div className="flex items-center gap-1.5">
+            <Users size={14} className="text-gray-400" />
+            <span className="text-sm font-semibold text-gray-900">
+              {roleUserCounts.get(role.name) ?? 0}
+            </span>
+          </div>
+        );
+      case "isDefault":
+        return role.isDefault ? (
+          <Chip size="sm" variant="flat" color="primary">預設</Chip>
+        ) : (
+          <span className="text-sm text-gray-400">-</span>
+        );
+      case "actions":
+        return (
+          <Button
+            size="sm"
+            variant="light"
+            isIconOnly
+            className="text-gray-400 hover:text-blue-500"
+          >
+            <Pencil size={15} />
+          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // ==================== 員工表格 Cell 渲染 ====================
+
+  const renderUserCell = (user: UserDto, columnKey: string) => {
     switch (columnKey) {
       case "name":
         return (
           <div className="flex items-center gap-3">
             <Avatar
-              name={staff.name.charAt(0)}
+              name={getDisplayName(user).charAt(0)}
               size="sm"
               classNames={{ base: "bg-blue-50 shrink-0", name: "text-blue-500 font-semibold" }}
             />
             <div>
-              <p className="text-sm font-semibold text-gray-900">{staff.name}</p>
-              <p className="text-xs text-gray-400">{staff.email}</p>
+              <p className="text-sm font-semibold text-gray-900">{getDisplayName(user)}</p>
+              <p className="text-xs text-gray-400">@{user.userName}</p>
             </div>
           </div>
         );
-      case "position":
+      case "email":
+        return <span className="text-sm text-gray-900">{user.email}</span>;
+      case "phoneNumber":
+        return <span className="text-sm text-gray-900">{user.phoneNumber || "-"}</span>;
+      case "roles":
         return (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-900">{staff.position}</span>
-            <Chip size="sm" variant="flat" color={staff.levelType}>{staff.level}</Chip>
+          <div className="flex items-center gap-1 flex-wrap">
+            {(user.roles ?? []).length > 0 ? (
+              (user.roles ?? []).map((role) => (
+                <Chip key={role} size="sm" variant="flat" color={getRoleChipColor(role)}>
+                  {getRoleLabel(role)}
+                </Chip>
+              ))
+            ) : (
+              <span className="text-sm text-gray-400">-</span>
+            )}
           </div>
         );
+      case "isActive":
+        return (
+          <Chip size="sm" variant="flat" color={user.isActive ? "success" : "default"}>
+            {user.isActive ? "啟用" : "停用"}
+          </Chip>
+        );
+      case "creationTime":
+        return <span className="text-sm text-gray-900">{formatDate(user.creationTime)}</span>;
       case "actions":
         return (
           <button className="text-gray-400 hover:text-gray-600">
@@ -106,211 +266,177 @@ export default function StaffPage() {
           </button>
         );
       default:
-        return <span className="text-sm text-gray-900">{staff[columnKey as keyof typeof staff]}</span>;
+        return null;
     }
-  }, []);
+  };
 
   return (
     <div className="space-y-6">
-      {/* 標題列 */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold">員工 ({totalStaff})</h1>
-        <div className="flex-1 flex justify-center">
-          <Tabs
-            selectedKey={viewMode}
-            onSelectionChange={(key) => setViewMode(String(key))}
-            variant="light"
-            radius="full"
-            classNames={{
-              tabList: "bg-gray-100 p-1 rounded-full",
-              tab: "px-6 py-1.5 text-sm font-medium",
-              cursor: "bg-blue-500 rounded-full",
-            }}
-          >
-            <Tab key="0" title="列表" />
-            <Tab key="1" title="狀態" />
-          </Tabs>
+      {/* ==================== 權限管理表格 ==================== */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold">權限管理</h2>
+            <Chip size="sm" variant="flat" classNames={{ base: "bg-gray-100", content: "text-gray-600 font-semibold" }}>
+              {roles.length}
+            </Chip>
+          </div>
         </div>
 
-        <button
-          onClick={() => setShowFilter(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+        <Table
+          aria-label="權限列表"
+          selectionMode="single"
+          selectedKeys={selectedRole ? new Set([selectedRole]) : new Set()}
+          onSelectionChange={(keys) => {
+            if (keys === "all") return;
+            const val = Array.from(keys)[0] as string | undefined;
+            setSelectedRole(val ?? null);
+            setPage(1);
+          }}
+          classNames={{
+            wrapper: "rounded-2xl shadow-sm",
+            th: "text-xs text-gray-400 font-medium bg-white",
+            td: "text-sm py-3",
+            tr: "cursor-pointer hover:bg-gray-50 transition-colors data-[selected=true]:bg-blue-50",
+          }}
         >
-          <Filter size={18} />
-        </button>
-
-        <Button onPress={() => setShowAddModal(true)} className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600">
-          <Plus size={16} /> 添加員工
-        </Button>
+          <TableHeader columns={roleColumns}>
+            {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+          </TableHeader>
+          <TableBody
+            items={roles}
+            isLoading={rolesLoading}
+            loadingContent={<Spinner color="primary" label="載入中..." />}
+            emptyContent="尚無角色資料"
+          >
+            {(role) => (
+              <TableRow key={role.name}>
+                {(columnKey) => (
+                  <TableCell>{renderRoleCell(role, String(columnKey))}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* 員工表格 */}
-      <Table
-        aria-label="員工列表"
-        classNames={{
-          wrapper: "rounded-2xl shadow-sm",
-          th: "text-xs text-gray-400 font-medium bg-white",
-          td: "text-sm py-4",
-        }}
-        bottomContent={
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">
-              {staffData.length > 0
-                ? `${(page - 1) * rowsPerPage + 1}-${Math.min(page * rowsPerPage, staffData.length)} of ${totalStaff} 位員工`
-                : "沒有資料"
-              }
-            </span>
-
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 whitespace-nowrap">每頁顯示</span>
-                <Select
-                  size="sm"
-                  selectedKeys={new Set([String(rowsPerPage)])}
-                  onSelectionChange={onRowsPerPageChange}
-                  className="w-20"
-                  classNames={{ trigger: "h-8 min-h-8 rounded-lg" }}
-                  aria-label="每頁筆數"
-                >
-                  {rowsPerPageOptions.map((opt) => (
-                    <SelectItem key={opt.key}>{opt.label}</SelectItem>
-                  ))}
-                </Select>
-              </div>
-
-              <span className="text-sm text-gray-500 whitespace-nowrap">
-                第 {page} 頁，共 {totalPages} 頁
-              </span>
-
-              <Pagination
-                total={totalPages}
-                page={page}
-                onChange={setPage}
-                showControls
+      {/* ==================== 員工管理表格 ==================== */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold">
+              {selectedRole ? `${getRoleLabel(selectedRole)} 員工` : "全部員工"}
+            </h2>
+            <Chip size="sm" variant="flat" classNames={{ base: "bg-gray-100", content: "text-gray-600 font-semibold" }}>
+              {selectedRole ? filtered.length : totalCount}
+            </Chip>
+            {selectedRole && (
+              <Button
                 size="sm"
-                classNames={{
-                  cursor: "bg-blue-500 text-white",
-                }}
-              />
-            </div>
+                variant="flat"
+                className="text-gray-500"
+                onPress={() => { setSelectedRole(null); setPage(1); }}
+              >
+                清除篩選
+              </Button>
+            )}
           </div>
-        }
-      >
-        <TableHeader columns={columns}>
-          {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
-        </TableHeader>
-        <TableBody items={paginatedStaff} emptyContent="沒有符合條件的員工">
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>{renderCell(item, String(columnKey))}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
 
-      {/* 篩選 Drawer */}
-      <AdminDrawer
-        open={showFilter}
-        onClose={() => setShowFilter(false)}
-        title="篩選"
-        footer={
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-sm text-gray-500">
-              <Info size={14} className="text-blue-500" /> 找到 10 個匹配項
-            </span>
-            <Button onPress={() => setShowFilter(false)} className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600">
-              提交篩選 ({filterCount})
+          <div className="flex items-center gap-2">
+            <Input
+              size="sm"
+              placeholder="搜尋..."
+              variant="bordered"
+              value={search}
+              onValueChange={(val) => { setSearch(val); setPage(1); }}
+              startContent={<Search size={14} className="text-gray-400" />}
+              classNames={{ base: "w-48", inputWrapper: "rounded-lg border-gray-200" }}
+            />
+            <Button
+              size="sm"
+              onPress={() => setShowAddModal(true)}
+              className="bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600"
+            >
+              <Plus size={14} /> 添加
             </Button>
           </div>
-        }
-      >
-        <div className="space-y-6">
-          <div>
-            <p className="mb-2 text-sm text-gray-500">時間周期</p>
-            <div className="relative">
-              <input placeholder="選擇時間周期" className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500" />
-              <CalendarDays size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-3 text-sm text-gray-500">任務組</p>
-            <div className="space-y-3">
-              {Object.entries(filterGroups).map(([name, checked]) => (
-                <Checkbox
-                  key={name}
-                  isSelected={checked}
-                  onValueChange={(val) => setFilterGroups((prev) => ({ ...prev, [name]: val }))}
-                  classNames={{ label: "text-sm text-gray-700" }}
-                >
-                  {name}
-                </Checkbox>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-3 text-sm text-gray-500">報告人</p>
-            <div className="space-y-3">
-              {Object.entries(filterReporters).map(([name, checked]) => (
-                <Checkbox
-                  key={name}
-                  isSelected={checked}
-                  onValueChange={(val) => setFilterReporters((prev) => ({ ...prev, [name]: val }))}
-                  classNames={{ label: "text-sm text-gray-700" }}
-                >
-                  {name}
-                </Checkbox>
-              ))}
-            </div>
-            <button className="mt-3 text-sm font-medium text-blue-500 hover:text-blue-600">
-              查看更多 <ChevronDown size={14} className="inline" />
-            </button>
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm text-gray-500">執行人</p>
-            <div className="relative mb-3">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input placeholder="搜索" className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500" />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedExecutors.map((name, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 py-1 pl-2 pr-2 text-sm text-gray-700">
-                  <Avatar name={name.charAt(0)} size="sm" classNames={{ base: "bg-blue-50 h-5 w-5", name: "text-blue-500 font-semibold text-[10px]" }} />
-                  {name}
-                  <button onClick={() => setSelectedExecutors((prev) => prev.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-gray-600"><X size={12} /></button>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm text-gray-500">預估時間</p>
-            <div className="relative">
-              <input placeholder="選擇預估時間" className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 pr-10 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500" />
-              <Clock size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm text-gray-500">優先等級</p>
-            <div className="relative">
-              <select value={priority} onChange={(e) => setPriority(e.target.value)} className="h-11 w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 pr-10 text-sm text-gray-900 outline-none focus:border-blue-500">
-                <option value="高">高</option>
-                <option value="中">中</option>
-                <option value="低">低</option>
-              </select>
-              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
         </div>
-      </AdminDrawer>
 
-      {/* 添加員工 Modal */}
-      <Modal isOpen={showAddModal} onOpenChange={(open) => { if (!open) setShowAddModal(false); }} placement="center" classNames={{ base: "bg-white rounded-2xl" }}>
+        <Table
+          aria-label="員工列表"
+          classNames={{
+            wrapper: "rounded-2xl shadow-sm",
+            th: "text-xs text-gray-400 font-medium bg-white",
+            td: "text-sm py-4",
+          }}
+          bottomContent={
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className="text-sm text-gray-500">
+                {totalCount > 0
+                  ? `${(page - 1) * rowsPerPage + 1}-${Math.min(page * rowsPerPage, totalCount)} / ${totalCount} 位員工`
+                  : "沒有資料"}
+              </span>
+
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 whitespace-nowrap">每頁顯示</span>
+                  <Select
+                    size="sm"
+                    selectedKeys={new Set([String(rowsPerPage)])}
+                    onSelectionChange={onRowsPerPageChange}
+                    className="w-20"
+                    classNames={{ trigger: "h-8 min-h-8 rounded-lg" }}
+                    aria-label="每頁筆數"
+                  >
+                    {rowsPerPageOptions.map((opt) => (
+                      <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                    ))}
+                  </Select>
+                </div>
+
+                <span className="text-sm text-gray-500 whitespace-nowrap">
+                  第 {page} 頁，共 {totalPages} 頁
+                </span>
+
+                <Pagination
+                  total={totalPages}
+                  page={page}
+                  onChange={setPage}
+                  showControls
+                  size="sm"
+                  classNames={{ cursor: "bg-blue-500 text-white" }}
+                />
+              </div>
+            </div>
+          }
+        >
+          <TableHeader columns={userColumns}>
+            {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+          </TableHeader>
+          <TableBody
+            items={filtered}
+            isLoading={usersLoading}
+            loadingContent={<Spinner color="primary" label="載入中..." />}
+            emptyContent={isError ? "載入失敗，請稍後再試" : "沒有符合條件的員工"}
+          >
+            {(item) => (
+              <TableRow key={item.id}>
+                {(columnKey) => (
+                  <TableCell>{renderUserCell(item, String(columnKey))}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* ==================== 添加員工 Modal ==================== */}
+      <Modal
+        isOpen={showAddModal}
+        onOpenChange={(open) => { if (!open) setShowAddModal(false); }}
+        placement="center"
+        classNames={{ base: "bg-white rounded-2xl" }}
+      >
         <ModalContent>
           <ModalHeader>添加員工</ModalHeader>
           <ModalBody className="pb-6">
@@ -339,13 +465,21 @@ export default function StaffPage() {
               </svg>
             </div>
 
-            <Input label="員工郵箱" placeholder="memberemail@hotmail.com" variant="bordered" classNames={{ inputWrapper: "rounded-xl" }} />
+            <Input
+              label="員工郵箱"
+              placeholder="memberemail@hotmail.com"
+              variant="bordered"
+              classNames={{ inputWrapper: "rounded-xl" }}
+            />
 
             <div className="mt-5 flex items-center justify-between">
               <button className="flex items-center gap-1 text-sm font-medium text-blue-500 hover:text-blue-600">
                 <Plus size={16} /> 繼續添加
               </button>
-              <Button onPress={() => setShowAddModal(false)} className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600">
+              <Button
+                onPress={() => setShowAddModal(false)}
+                className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600"
+              >
                 確定添加
               </Button>
             </div>

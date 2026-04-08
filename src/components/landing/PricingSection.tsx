@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -9,10 +9,11 @@ import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { fontSize, textColor } from "@/constants/landing-styles";
 import ContactFormModal from "@/components/landing/ContactFormModal";
+import { usePricingPlanList } from "@/hooks/usePricingPlans";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ==================== 優惠方案資料 ====================
+// ==================== 優惠方案 ====================
 
 const PROMOTION_END_DATE = new Date("2026-04-30T23:59:59");
 
@@ -26,48 +27,6 @@ interface Plan {
   cta: string;
   recommended?: boolean;
 }
-
-const plans: Plan[] = [
-  {
-    name: "免費體驗",
-    price: "免費",
-    period: "14 天",
-    description: "零風險體驗全功能，免綁定信用卡",
-    features: ["全功能 14 天試用", "免綁定信用卡", "基礎數據報表", "線上客服支援"],
-    cta: "立即免費體驗",
-  },
-  {
-    name: "創業啟航",
-    price: "NT$990",
-    originalPrice: "NT$1,980",
-    period: "/ 月",
-    description: "首 3 個月 5 折，最適合成長中的美業品牌",
-    features: [
-      "首 3 個月 5 折優惠",
-      "專屬客戶成功顧問",
-      "LINE 官方帳號串接",
-      "進階數據分析報表",
-      "多門市管理功能",
-    ],
-    cta: "立即開始",
-    recommended: true,
-  },
-  {
-    name: "年度夥伴",
-    price: "NT$1,580",
-    originalPrice: "NT$1,980",
-    period: "/ 月（年繳）",
-    description: "年繳享 8 折，額外贈送 2 個月使用權",
-    features: [
-      "年繳 8 折優惠",
-      "贈送 2 個月使用權",
-      "優先專屬客服通道",
-      "客製化品牌頁面",
-      "API 串接支援",
-    ],
-    cta: "了解更多",
-  },
-];
 
 const trustItems = [
   { icon: Shield, text: "資料加密保護" },
@@ -206,6 +165,36 @@ const PricingSection = () => {
   const cardsRef = useRef<HTMLDivElement>(null);
   const trustRef = useRef<HTMLDivElement>(null);
 
+  const { data: planData } = usePricingPlanList({
+    maxResultCount: 10,
+    sorting: "SortOrder ASC",
+  });
+
+  const plans: Plan[] = useMemo(
+    () =>
+      (planData?.items ?? [])
+        .filter((p) => p.isPublished)
+        .map((p) => ({
+          name: p.name,
+          price:
+            p.price != null
+              ? `NT$${p.price.toLocaleString()}`
+              : "免費",
+          originalPrice:
+            p.originalPrice != null
+              ? `NT$${p.originalPrice.toLocaleString()}`
+              : undefined,
+          period: p.period ?? "",
+          description: p.description ?? "",
+          features: [...p.features]
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((f) => f.text),
+          cta: p.ctaText ?? "了解更多",
+          recommended: p.isRecommended,
+        })),
+    [planData],
+  );
+
   useGSAP(
     () => {
       // 標題區動畫
@@ -265,7 +254,7 @@ const PricingSection = () => {
         }
       );
     },
-    { scope: sectionRef, dependencies: [] }
+    { scope: sectionRef, dependencies: [plans.length] }
   );
 
   return (
