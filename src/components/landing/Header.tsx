@@ -42,6 +42,13 @@ const Header = () => {
     const darkSections = gsap.utils.toArray<HTMLElement>(
       '[data-section-theme="dark"]'
     );
+
+    // 完全沒有深色 section 的頁面（例如 /features）直接視為淺色
+    if (darkSections.length === 0) {
+      setIsDarkSection(false);
+      return;
+    }
+
     darkSections.forEach((section) => {
       ScrollTrigger.create({
         trigger: section,
@@ -63,7 +70,7 @@ const Header = () => {
       <header className="fixed top-0 left-0 right-0 z-50">
         <div className="w-full pr-9 py-9 flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <DooseeLogo />
+            <DooseeLogo textColor={isDarkSection ? "#ffffff" : "#000000"} />
           </Link>
           <div className="w-[50px] h-[50px]" />
         </div>

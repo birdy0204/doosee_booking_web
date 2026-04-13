@@ -197,27 +197,32 @@ const PricingSection = () => {
 
   useGSAP(
     () => {
+      // 方案資料尚未載入完成前不執行，避免對空 HTMLCollection / null 觸發 GSAP 警告
+      if (plans.length === 0) return;
+
       // 標題區動畫
-      gsap.fromTo(
-        headerRef.current,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 70%",
-            end: "top 40%",
-            scrub: 1,
-          },
-        }
-      );
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current,
+          { y: 60, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 70%",
+              end: "top 40%",
+              scrub: 1,
+            },
+          }
+        );
+      }
 
       // 卡片動畫
       const cards = cardsRef.current?.children;
-      if (cards) {
+      if (cards && cards.length > 0) {
         gsap.fromTo(
           cards,
           { y: 80, opacity: 0 },
@@ -238,21 +243,23 @@ const PricingSection = () => {
       }
 
       // 信任元素動畫
-      gsap.fromTo(
-        trustRef.current,
-        { opacity: 0 },
-        {
-          opacity: 1,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: trustRef.current,
-            start: "top 90%",
-            end: "top 70%",
-            scrub: 1,
-          },
-        }
-      );
+      if (trustRef.current) {
+        gsap.fromTo(
+          trustRef.current,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: trustRef.current,
+              start: "top 90%",
+              end: "top 70%",
+              scrub: 1,
+            },
+          }
+        );
+      }
     },
     { scope: sectionRef, dependencies: [plans.length] }
   );

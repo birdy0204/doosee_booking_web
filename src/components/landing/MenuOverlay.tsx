@@ -18,17 +18,10 @@ const menuItems = [
   { label: "聯絡我們", href: "/#contact" },
 ];
 
-const subMenuItems = [
-  { label: "線上預約管理", href: "/features" },
-  { label: "顧客關係經營", href: "/features" },
-  { label: "數據分析", href: "/features" },
-];
-
 const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
   const isFirstRender = useRef(true);
   const panelRef = useRef<HTMLDivElement>(null);
   const menuItemsRef = useRef<HTMLUListElement>(null);
-  const subItemsRef = useRef<HTMLUListElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const topBarRef = useRef<HTMLDivElement>(null);
 
@@ -85,20 +78,6 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
         );
       }
 
-      if (subItemsRef.current) {
-        tl.from(
-          subItemsRef.current.children,
-          {
-            y: 30,
-            opacity: 0,
-            duration: 0.5,
-            stagger: 0.06,
-            ease: "power3.out",
-          },
-          0.6
-        );
-      }
-
       if (bottomRef.current) {
         tl.from(
           bottomRef.current.children,
@@ -131,7 +110,7 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
       const tl = gsap.timeline({
         onComplete: () => {
           // 清除子元素的 inline style，避免 from() 設定的 opacity/transform 殘留
-          [menuItemsRef, subItemsRef, bottomRef].forEach((ref) => {
+          [menuItemsRef, bottomRef].forEach((ref) => {
             if (ref.current?.children) {
               gsap.set(Array.from(ref.current.children), { clearProps: "all" });
             }
@@ -202,8 +181,8 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
         {/* 右側：選單內容 */}
         <div className="w-full md:w-[55%] h-full bg-foreground text-background flex flex-col px-8 md:px-16 py-8 pt-24">
 
-          {/* 中間區域：主選單 + 副選單 */}
-          <div className="flex-1 flex flex-col md:flex-row gap-12 md:gap-20">
+          {/* 中間區域：主選單 */}
+          <div className="flex-1 flex flex-col">
             <ul ref={menuItemsRef} className="flex flex-col gap-2 md:gap-3">
               {menuItems.map((item) => (
                 <li key={item.href}>
@@ -211,23 +190,6 @@ const MenuOverlay = ({ isOpen, onClose }: MenuOverlayProps) => {
                     href={item.href}
                     onClick={onClose}
                     className="block text-5xl md:text-7xl font-light text-background hover:text-primary transition-colors duration-300 leading-[1.15]"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <ul
-              ref={subItemsRef}
-              className="flex flex-col gap-3 md:mt-auto md:mb-8"
-            >
-              {subMenuItems.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className="text-sm md:text-base italic text-background/70 hover:text-primary transition-colors duration-300"
                   >
                     {item.label}
                   </Link>

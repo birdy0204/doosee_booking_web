@@ -24,6 +24,15 @@ const FAQSection = () => {
 
   useGSAP(
     () => {
+      // 資料尚未載入或節點尚未掛載時不執行動畫，避免 GSAP 噴出 target/scope 警告
+      if (
+        faqItems.length === 0 ||
+        !headerRef.current ||
+        !accordionRef.current
+      ) {
+        return;
+      }
+
       // 標題動畫
       gsap.fromTo(
         headerRef.current,
@@ -60,17 +69,18 @@ const FAQSection = () => {
         }
       );
     },
-    { scope: sectionRef, dependencies: [] }
+    { scope: sectionRef, dependencies: [faqItems.length] }
   );
 
-  if (faqItems.length === 0) return null;
-
+  // 無資料時隱藏但仍保留節點掛載，確保 useGSAP 的 scope ref 有效
   return (
     <section
       id="faq"
       data-section-label="常見問題"
       ref={sectionRef}
-      className="py-20 lg:py-28 bg-secondary"
+      className={`py-20 lg:py-28 bg-secondary ${
+        faqItems.length === 0 ? "hidden" : ""
+      }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row lg:gap-16 xl:gap-24">
