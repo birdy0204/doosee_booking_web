@@ -31,6 +31,7 @@ import {
   useDeleteTestimonial,
 } from "@/hooks/useTestimonials";
 import type { CreateUpdateTestimonialDto, TestimonialDto } from "@/types/api";
+import PartnerSection from "./PartnerSection";
 
 // ==================== 主元件 ====================
 
@@ -122,114 +123,124 @@ export default function TestimonialsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* 標題 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">客戶見證</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            管理前台首頁的客戶見證內容
-          </p>
+    <div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        {/* ==================== 合作夥伴區塊 ==================== */}
+        <div className="min-w-0">
+          <PartnerSection />
         </div>
-        <Button
-          onPress={openCreate}
-          className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600"
-        >
-          <Plus size={16} /> 新增見證
-        </Button>
-      </div>
 
-      {/* 表格 */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spinner size="lg" color="primary" />
+        {/* ==================== 客戶見證區塊 ==================== */}
+        <div className="min-w-0 space-y-6">
+          {/* 標題 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">客戶見證</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                管理前台首頁的客戶見證內容
+              </p>
+            </div>
+            <Button
+              onPress={openCreate}
+              className="bg-blue-500 text-white rounded-xl px-5 h-10 font-medium hover:bg-blue-600"
+            >
+              <Plus size={16} /> 新增見證
+            </Button>
+          </div>
+
+          {/* 表格 */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Spinner size="lg" color="primary" />
+            </div>
+          ) : (
+            <Table
+              aria-label="客戶見證"
+              classNames={{
+                wrapper: "rounded-2xl shadow-sm",
+                th: "text-xs text-gray-400 font-medium bg-white",
+                td: "text-sm",
+              }}
+            >
+              <TableHeader>
+                <TableColumn width={60}>排序</TableColumn>
+                <TableColumn>客戶</TableColumn>
+                <TableColumn>見證內容</TableColumn>
+                <TableColumn width={80}>狀態</TableColumn>
+                <TableColumn width={100}>操作</TableColumn>
+              </TableHeader>
+              <TableBody
+                items={items}
+                emptyContent="尚無客戶見證，點擊「新增見證」開始建立"
+              >
+                {(item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <span className="text-gray-400 font-mono">
+                        {item.sortOrder}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          name={item.authorName.charAt(0)}
+                          size="sm"
+                          classNames={{
+                            base: "bg-purple-50 shrink-0",
+                            name: "text-purple-500 font-semibold",
+                          }}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {item.authorName}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {item.authorTitle}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-gray-500 line-clamp-1 max-w-md">
+                        {item.content}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={item.isPublished ? "success" : "warning"}
+                      >
+                        {item.isPublished ? "已發佈" : "草稿"}
+                      </Chip>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          onPress={() => openEdit(item)}
+                        >
+                          <Pencil size={16} className="text-gray-400" />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          onPress={() => openDeleteConfirm(item.id)}
+                        >
+                          <Trash2 size={16} className="text-gray-400" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
-      ) : (
-        <Table
-          aria-label="客戶見證"
-          classNames={{
-            wrapper: "rounded-2xl shadow-sm",
-            th: "text-xs text-gray-400 font-medium bg-white",
-            td: "text-sm",
-          }}
-        >
-          <TableHeader>
-            <TableColumn width={60}>排序</TableColumn>
-            <TableColumn>客戶</TableColumn>
-            <TableColumn>見證內容</TableColumn>
-            <TableColumn width={80}>狀態</TableColumn>
-            <TableColumn width={100}>操作</TableColumn>
-          </TableHeader>
-          <TableBody
-            items={items}
-            emptyContent="尚無客戶見證，點擊「新增見證」開始建立"
-          >
-            {(item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <span className="text-gray-400 font-mono">
-                    {item.sortOrder}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      name={item.authorName.charAt(0)}
-                      size="sm"
-                      classNames={{
-                        base: "bg-purple-50 shrink-0",
-                        name: "text-purple-500 font-semibold",
-                      }}
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {item.authorName}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {item.authorTitle}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-gray-500 line-clamp-1 max-w-md">
-                    {item.content}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    size="sm"
-                    variant="flat"
-                    color={item.isPublished ? "success" : "warning"}
-                  >
-                    {item.isPublished ? "已發佈" : "草稿"}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      onPress={() => openEdit(item)}
-                    >
-                      <Pencil size={16} className="text-gray-400" />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      onPress={() => openDeleteConfirm(item.id)}
-                    >
-                      <Trash2 size={16} className="text-gray-400" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      )}
+      </div>
 
       {/* ==================== 編輯 / 新增 Modal ==================== */}
       <Modal
@@ -357,6 +368,7 @@ export default function TestimonialsPage() {
           )}
         </ModalContent>
       </Modal>
+
     </div>
   );
 }

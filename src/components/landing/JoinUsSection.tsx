@@ -7,37 +7,22 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { fontSize, textColor } from "@/constants/landing-styles";
 import { useTestimonialList } from "@/hooks/useTestimonials";
+import { usePartnerList } from "@/hooks/usePartners";
+import { PartnerCategory } from "@/types/api";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ==================== 跑馬燈資料 ====================
+// ==================== 跑馬燈漸層色 ====================
 
-interface MarqueeCard {
-  name: string;
-  type: string;
-  gradient: string;
-}
-
-const marqueeRow1: MarqueeCard[] = [
-  { name: "FLUX Hair Salon", type: "髮廊 · 台北大安", gradient: "from-zinc-700 to-zinc-900" },
-  { name: "Belle Nails", type: "美甲 · 台中西區", gradient: "from-pink-500 to-rose-600" },
-  { name: "淨妍美學診所", type: "醫美 · 全台連鎖", gradient: "from-sky-400 to-blue-600" },
-  { name: "Oasis SPA", type: "SPA · 高雄左營", gradient: "from-teal-400 to-emerald-600" },
-  { name: "小紅書美甲", type: "美甲美睫 · 台北中山", gradient: "from-red-400 to-rose-500" },
-  { name: "MAVEN Hair", type: "髮廊 · 新竹竹北", gradient: "from-amber-500 to-orange-600" },
-  { name: "Aura Skincare", type: "護膚 · 台南東區", gradient: "from-violet-400 to-purple-600" },
-  { name: "Muse 紋繡學院", type: "紋繡 · 台北信義", gradient: "from-fuchsia-500 to-pink-600" },
-];
-
-const marqueeRow2: MarqueeCard[] = [
-  { name: "Vicky 老師", type: "美睫技術講師 · 10 萬粉絲", gradient: "from-purple-500 to-indigo-600" },
-  { name: "Kevin 髮型師", type: "明星御用造型師", gradient: "from-zinc-600 to-zinc-800" },
-  { name: "小安老師", type: "日式美甲達人 · 8 萬粉絲", gradient: "from-rose-400 to-pink-500" },
-  { name: "Mia 皮膚管理師", type: "韓式皮膚管理專家", gradient: "from-sky-400 to-cyan-600" },
-  { name: "阿倫 Hair", type: "YouTube 髮型教學 · 25 萬訂閱", gradient: "from-red-500 to-orange-500" },
-  { name: "Sophia 紋繡師", type: "半永久紋繡冠軍", gradient: "from-amber-400 to-yellow-500" },
-  { name: "Lena 美學總監", type: "連鎖品牌創辦人", gradient: "from-emerald-400 to-teal-600" },
-  { name: "Ivy 造型師", type: "婚禮造型 · 12 萬粉絲", gradient: "from-fuchsia-400 to-purple-500" },
+const marqueeGradients = [
+  "from-zinc-700 to-zinc-900",
+  "from-pink-500 to-rose-600",
+  "from-sky-400 to-blue-600",
+  "from-teal-400 to-emerald-600",
+  "from-red-400 to-rose-500",
+  "from-amber-500 to-orange-600",
+  "from-violet-400 to-purple-600",
+  "from-fuchsia-500 to-pink-600",
 ];
 
 // ==================== 客戶見證：漸層色與縮寫生成 ====================
@@ -111,6 +96,36 @@ const JoinUsSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const testimonialRef = useRef<HTMLDivElement>(null);
+
+  const { data: partnerData } = usePartnerList({
+    maxResultCount: 50,
+    sorting: "SortOrder ASC",
+  });
+
+  // 依 Category 分成兩排跑馬燈
+  const marqueeRow1 = useMemo(
+    () =>
+      (partnerData?.items ?? [])
+        .filter((p) => p.isPublished && p.category === PartnerCategory.Company)
+        .map((p, i) => ({
+          name: p.name,
+          type: p.description ?? "",
+          gradient: marqueeGradients[i % marqueeGradients.length],
+        })),
+    [partnerData],
+  );
+
+  const marqueeRow2 = useMemo(
+    () =>
+      (partnerData?.items ?? [])
+        .filter((p) => p.isPublished && p.category === PartnerCategory.PersonalBrand)
+        .map((p, i) => ({
+          name: p.name,
+          type: p.description ?? "",
+          gradient: marqueeGradients[i % marqueeGradients.length],
+        })),
+    [partnerData],
+  );
 
   const { data: testimonialData } = useTestimonialList({
     maxResultCount: 50,

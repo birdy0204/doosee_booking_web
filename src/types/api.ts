@@ -159,20 +159,20 @@ export interface CreateUpdateTestimonialDto {
 export interface PartnerDto {
   id: string;
   name: string;
-  logoUrl: string;
-  websiteUrl?: string;
+  description?: string;
   category: PartnerCategory;
   sortOrder: number;
+  isPublished: boolean;
   creationTime: string;
   lastModificationTime?: string;
 }
 
 export interface CreateUpdatePartnerDto {
   name: string;
-  logoUrl: string;
-  websiteUrl?: string;
+  description?: string;
   category: PartnerCategory;
   sortOrder?: number;
+  isPublished?: boolean;
 }
 
 // ==================== 方案定價 ====================

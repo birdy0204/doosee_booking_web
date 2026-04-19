@@ -17,7 +17,6 @@ import {
   LogOut,
   Quote,
   Tag,
-  Handshake,
   Phone,
 } from "lucide-react";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/dropdown";
@@ -55,7 +54,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "客戶見證", href: "/testimonials", icon: Quote },
       { title: "優惠方案", href: "/plans", icon: Tag },
-      { title: "合作夥伴", href: "/partners", icon: Handshake },
       { title: "常見問題", href: "/faqs", icon: MessageCircleQuestion },
       { title: "聯絡資訊", href: "/contact", icon: Phone },
     ],
